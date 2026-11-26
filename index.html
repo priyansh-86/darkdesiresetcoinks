@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SETCO INKS // CLOUD LABEL STUDIO v7.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #F4F1EA;
+    --card: #FFFFFF;
+    --ink: #111111;
+    --yellow: #FFD60A;
+    --blue: #0057FF;
+    --lime: #B7F34D;
+    --green: #00B86B;
+    --red: #FF3B30;
+    --pink: #FFD6D6;
+    --border: 2.5px solid #111111;
+    --shadow: 4px 4px 0px #111111;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
+  input, textarea, select {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    padding-bottom: 92px;
+  }
+  header {
+    background: var(--card);
+    border-bottom: var(--border);
+    padding: 12px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .hdr-row {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .brand { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444; margin-top: 2px; }
+  .badges { display: flex; gap: 6px; align-items: center; }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0px var(--ink);
+    background: var(--card);
+  }
+  .bg-lime { background: var(--lime); }
+  .bg-yellow { background: var(--yellow); }
+  .bg-red { background: var(--red); color: #FFF; }
+
+  main {
+    max-width: 760px;
+    margin: 12px auto;
+    padding: 0 12px;
+  }
+  .box {
+    background: var(--card);
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .status-bar {
+    display: none;
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .status-ok { background: var(--lime); }
+  .status-err { background: var(--pink); color: #8B0000; }
+  .status-info { background: var(--yellow); }
+
+  .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .mode-btn {
+    text-align: left;
+    background: var(--card);
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 12px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .mode-btn.active-ok { background: var(--lime); }
+  .mode-btn.active-grind { background: var(--blue); color: #FFF; }
+  .mode-title { font-size: 13px; font-weight: 700; display: block; }
+  .mode-sub { font-size: 10px; opacity: 0.85; margin-top: 2px; display: block; }
+
+  .scan-row {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .btn {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 12px 10px;
+    border: var(--border);
+    box-shadow: 3px 3px 0px var(--ink);
+    background: var(--card);
+    color: var(--ink);
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px var(--ink); }
+  .btn-yellow { background: var(--yellow); }
+  .btn-green { background: var(--green); color: #FFF; }
+  .btn-red { background: var(--red); color: #FFF; }
+  .btn-blue { background: var(--blue); color: #FFF; }
+  .btn-sm { padding: 7px 10px; font-size: 11px; box-shadow: 2px 2px 0px var(--ink); }
+
+  .drawer-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card);
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 12px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+  .drawer-body {
+    display: none;
+    background: var(--card);
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 12px;
+    margin-top: -8px;
+    margin-bottom: 12px;
+  }
+  .drawer-body.open { display: block; }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 540px) {
+    .settings-grid { grid-template-columns: 1fr; }
+  }
+  .lbl {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: #333;
+  }
+  input[type="text"], input[type="password"], input[type="number"], select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 2px solid var(--ink);
+    background: #FFF;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    border-radius: 0;
+  }
+
+  .batch-card {
+    background: var(--card);
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .batch-card.locked { border-color: var(--red); background: #FFF5F5; }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .span-2 { grid-column: 1 / -1; }
+  .audit-box {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border: 2px solid var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .audit-ok { background: var(--lime); }
+  .audit-warn { background: var(--pink); color: #8B0000; }
+  .fix-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+  .bottom-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--card);
+    border-top: var(--border);
+    padding: 10px 12px;
+    z-index: 50;
+  }
+  .bottom-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.45fr;
+    gap: 10px;
+  }
+
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17,17,17,0.8);
+    z-index: 90;
+    padding: 14px;
+    overflow-y: auto;
+  }
+  .modal-bg.open { display: block; }
+  .modal-card {
+    max-width: 680px;
+    margin: 12px auto;
+    background: var(--bg);
+    border: var(--border);
+    box-shadow: 6px 6px 0px #000;
+    padding: 14px;
+  }
+  .prev-canvas {
+    width: 100%;
+    height: auto;
+    border: 2px solid #111;
+    background: #FFF;
+    display: block;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="hdr-row">
+      <div>
+        <div class="brand">SETCO INKS // CLOUD LABELER</div>
+        <div class="sub">GITHUB PAGES • FIREBASE BRIDGE • v7.2</div>
+      </div>
+      <div class="badges">
+        <span id="bridgeBadge" class="badge bg-red">PC: OFFLINE</span>
+        <span id="dbBadge" class="badge bg-yellow">DB: 1179</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="statusBar" class="status-bar"></div>
+
+    <!-- LABEL MODE SWITCH -->
+    <div class="mode-grid">
+      <button id="btnModeOk" class="mode-btn" onclick="setLabelMode('ok_ink')">
+        <span class="mode-title">OK INK LABEL</span>
+        <span class="mode-sub">Tank / Pot Ready • Final Qty</span>
+      </button>
+      <button id="btnModeGrind" class="mode-btn active-grind" onclick="setLabelMode('grinding')">
+        <span class="mode-title">GRINDING / WIP</span>
+        <span class="mode-sub">Classic Industrial • Pass No</span>
+      </button>
+    </div>
+
+    <!-- SCANNER CARD -->
+    <div class="box">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:700;">SCAN BATCH CARD / WIP SLIP</span>
+        <span class="badge bg-lime">GROQ VISION + 1,179 DB</span>
+      </div>
+      <div class="scan-row">
+        <button class="btn btn-yellow" onclick="document.getElementById('camInput').click()">OPEN CAMERA</button>
+        <button class="btn" onclick="document.getElementById('galInput').click()">GALLERY</button>
+      </div>
+      <input id="camInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleImageUpload(this)">
+      <input id="galInput" type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+    </div>
+
+    <!-- CLOUD & PRINT SETTINGS DRAWER -->
+    <button class="drawer-toggle" onclick="toggleDrawer()">
+      <span>CLOUD BRIDGE, GROQ KEY &amp; PRINT SETTINGS</span>
+      <span id="drawerArrow">[ + OPEN ]</span>
+    </button>
+    <div id="settingsDrawer" class="drawer-body">
+      <div class="settings-grid">
+        <div class="span-2">
+          <span class="lbl">Firebase Realtime Database URL</span>
+          <input id="fbUrlInp" type="text" placeholder="https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app">
+        </div>
+        <div>
+          <span class="lbl">Bridge Secret PIN</span>
+          <input id="fbPinInp" type="text" value="7890" placeholder="7890">
+        </div>
+        <div>
+          <span class="lbl">Groq Vision API Key (Stored in Browser Only)</span>
+          <input id="groqKeyInp" type="password" placeholder="gsk_...">
+        </div>
+        <div class="span-2" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-yellow" style="flex:1;" onclick="saveCloudConfig()">SAVE CLOUD SETTINGS</button>
+          <button class="btn btn-sm" onclick="copySetupLink()">COPY PHONE SETUP LINK</button>
+        </div>
+        <div>
+          <span class="lbl">Label Layout Template</span>
+          <select id="layoutSel" onchange="savePrefs()">
+            <option value="classic" selected>Classic Industrial Grid (Recommended)</option>
+            <option value="ok_ink_qr">OK INK + Batch QR Code</option>
+            <option value="ok_ink">OK INK Standard Stamp</option>
+            <option value="pro_card">Grinding Pro Industrial Card</option>
+            <option value="pro_qr">Grinding Pro + QR</option>
+          </select>
+        </div>
+        <div>
+          <span class="lbl">Quantity Mode</span>
+          <select id="qtyModeSel" onchange="applyQtyMode()">
+            <option value="grinding" selected>Part-A Grinding Qty</option>
+            <option value="final">Final Batch Qty (OK INK)</option>
+          </select>
+        </div>
+        <div>
+          <span class="lbl">Font Family (On PC Printer)</span>
+          <select id="fontSel" onchange="savePrefs()">
+            <option value="poppins" selected>Poppins Bold</option>
+            <option value="arial_black">Arial Black</option>
+            <option value="montserrat">Montserrat Bold</option>
+            <option value="oswald">Oswald Bold</option>
+          </select>
+        </div>
+        <div>
+          <span class="lbl">Roll Orientation</span>
+          <select id="dirSel" onchange="savePrefs()">
+            <option value="landscape_90" selected>Landscape 90° (Standard 4x6)</option>
+            <option value="landscape_270">Landscape 270° (Flipped)</option>
+            <option value="portrait_0">Portrait 0°</option>
+          </select>
+        </div>
+        <div class="span-2" style="border-top:2px solid #111;padding-top:10px;margin-top:4px;">
+          <span class="lbl">Update Master DB (Upload Any Multi-Column Excel / CSV)</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="excelUploadInp" type="file" accept=".xlsx,.xls,.csv" onchange="importMasterExcel(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATCH QUEUE -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+      <div style="font-size:13px;font-weight:700;">BATCH QUEUE (<span id="batchCountBadge">0</span>)</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-sm" onclick="addBatchRow()">+ ADD</button>
+        <button class="btn btn-sm" onclick="loadSamples()">SAMPLES</button>
+        <button class="btn btn-sm btn-red" onclick="batches=[];renderBatches()">CLEAR</button>
+      </div>
+    </div>
+
+    <div id="batchList"></div>
+  </main>
+
+  <datalist id="masterCodesList"></datalist>
+
+  <!-- STICKY BOTTOM BAR -->
+  <div class="bottom-bar">
+    <div class="bottom-inner">
+      <button class="btn" onclick="openPreviewModal()">PREVIEW ALL</button>
+      <button id="printBtn" class="btn btn-green" onclick="sendToCloudPrinter()">PRINT TO OFFICE PC</button>
+    </div>
+  </div>
+
+  <!-- 203-DPI LIVE THERMAL PREVIEW MODAL -->
+  <div id="previewModal" class="modal-bg">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:14px;">203-DPI THERMAL PREVIEW (150x100MM)</div>
+        <button class="btn btn-sm btn-red" onclick="closePreviewModal()">CLOSE</button>
+      </div>
+      <div id="previewContainer"></div>
+      <button class="btn btn-green" style="width:100%;" onclick="closePreviewModal();sendToCloudPrinter();">CONFIRM &amp; PRINT TO TSC</button>
+    </div>
+  </div>
+
+<script>
+const EMBEDDED_MASTER_DB = {"ENG00032":["INK LAB STIRRERS","F"],"EXT0011":["PP-EXT CONCENTRATE YELLOW 158 (PY-14)","C"],"NCC0001":["NC LX YELLOW 13 CONCENTRATE (SS-1/4)","C"],"NCC0002":["NC LX BLUE 15.4 CONCENTRATE (SS-1/4)","C"],"NCC0003":["NC LX RED 57.1 CONCENTRATE (SS-1/4)","C"],"NCC0005":["NC LX CONCENTRATE YELLOW 13 (SS-3/5)","C"],"NCC0006":["NC LX CONCENTRATE YELLOW 14 (SS-3/5)","C"],"NCC0007":["NC LX CONCENTRATE BLUE 15.4 (SS-3/5)","C"],"NCC0008":["NC LX CONCENTRATE RED 57.1 (SS-3/5)","C"],"NCC0009":["NC LX CONCENTRATE RED 53.1 (SS-3/5)","C"],"NCC0010":["NC LX CONCENTRATE ORANGE 13 (SS-3/5)","C"],"NCC0013":["NC LX CONCENTRATE ORANGE 34 (SS-3/5)","C"],"NCC0014":["NC LX CONCENTRATE VIOLET 23 (SS-3/5)","C"],"NCC0017":["NC LX CONCENTRATE GREEN 7 (SS 1/4)","C"],"NCC0018":["NC LX CONCENTRATE WHITE (SS-1/4)","C"],"PAC0001":["PIGMENT CON. POLY BLUE 15:3","C"],"PAC0002":["PIGMENT CONC. POLY RED 57:1","C"],"PAC0003":["PIGMENT CONC. POLY YELLOW 12","C"],"PAC0004":["PIGMENT CONC. POLY BLACK","C"],"PAC0005":["PIGMENT CONC. POLY WHITE","C"],"PAC0006":["PIGMENT CONC. POLY VIOLET 27","C"],"PAC0007":["PIGMENT CONC. POLY RED 53:1","C"],"PAC0008":["PIGMENT CONC. POLY ORANGE 13","C"],"PAC0009":["POLY GREEN 7 CONCENTRATE","C"],"PAC0010":["GR-FL TECHNOLOGY POLY CONC.","C"],"PAC0011":["TECHNOLOGY POLY HDPE CONC.","C"],"PAC0012":["PIGMENT CONC. POLY YELLOW 14","C"],"PAC0013":["POLY CONCENTRATE YELLOW 13","C"],"PVC0001":["VINYL BLUE 15:3 CONCENTRATE","C"],"PVC0002":["VINYL YELLOW 12 CONCENTRATE","C"],"PVC0003":["VINYL OPQ YELLOW 12","C"],"PVC0004":["VINYL RED 57:1 CONCENTRATE","C"],"PVC0005":["VINYL RED 53:1 CONCENTRATE","C"],"PVC0006":["VINYL ORANGE 13 CONCENTRATE","C"],"PVC0007":["VINYL VIOLET 27 CONCENTRATE","C"],"PVC0008":["VINYL CARBON BLACK CONCENTRATE","C"],"PVC0009":["VINYL RED 146 CONCENTRATE","C"],"PVC0010":["VINYL VIOLET 23 CONCENTRATE","C"],"PVC0011":["VINYL WHITE CONCENTRATE","C"],"PVC0013":["VINYL GREEN-7 CONCENTRATE","C"],"PVC0020":["VINYL NT BLACK CONCENTRATE","C"],"PVC0026":["VINYL NT ORANGE 34 CONCENTRATE","C"],"PVC0034":["VINYL BLACK CONCENTRATE (P-35)","C"],"PVC0036":["VINYL ORANGE 34 CONCENTRATE","C"],"PVC0037":["VINYL YELLOW 83 CONCENTRATE","C"],"SF1001":["CO-SOLVENT VARNISH (50%)","S"],"SF1003":["BOPP ADDITIVE 20%","S"],"SF1006":["PA MEDIUM YPR-199 40%","S"],"SF1015":["SPL PU ADDITIVE 972","S"],"SF1016":["CO-SOLVENT POLYAMIDE VARNISH","S"],"SF1017":["VINYL VARNISH 20 % (NPAC)","S"],"SF1018":["SS POLYAMIDE VARNISH","S"],"SF1019":["ADDITIVE SILICA 10 %","S"],"SF1022":["SEMIFINISH NC VARNISH","S"],"SF1023":["SEMIFINISH ACRYALIC VARNISH","S"],"SF1026":["SOLBIN A MEDIUM (25%) NEW","S"],"SF1027":["SOLSPERSE 24000 SOLUTION","S"],"SF1029":["VARNISH SOLBIN-A","S"],"SF1032":["C EVA VARNISH EXTRUSION","S"],"SF1033":["EVA 40-W VARNISH","S"],"SF1034":["AEROSIL 972 ADD.","S"],"SF1036":["POLYAMIDE VARNISH CI FLEXO","S"],"SF1037":["NC LX 3/5 VARNISH","S"],"SF1038":["DISPERSING ADDITIVE SOLUTION 5919","S"],"SF1039":["ES 100 SOLUTION (25%)","S"],"SF1042":["NC BASE HX 30/50 (35%)","S"],"SF1045":["SS MALIC MEDIUM","S"],"SF1046":["SUPERCHLON 814 HS SOLUTION","S"],"SF1048":["AF 32 WAX PASTE","S"],"SF1049":["KETONIC MEDIUM","S"],"SF1053":["SOLBIN-A VARNISH (25%)","S"],"SF1055":["MALEIC VARNISH","S"],"SF1063":["E WAX PASTE 40%","S"],"SF1064":["SEMIFINISH NC BASE (LX-1/4)","S"],"SF1069":["POLY US 40 MEDIUM (40%)","S"],"SF1071":["VL PASTE (20%) NTNK","S"],"SF1079":["DIMEREX MED 40%","S"],"SF1084":["BOPP ADDITIVE (ESTER SOLUBLE)","S"],"SF1085":["MP45 VARNISH","S"],"SF1086":["SOLBIN A MEDIUM NTNK","S"],"SF1091":["EVA MEDIUM 40W","S"],"SF1098":["NC HX 30/50 40% BASE","S"],"SF1113":["ACRYLIC MEDIUM (35% TOLUENE BASE)","S"],"SF1114":["ANTIBLOCK ADDITIVE (NTNK)","S"],"SF1123":["ACRYLIC AR22 TRANS INK","S"],"SF1129":["NC BASE 3/5 40 % ETHANOL","S"],"SF1134":["SETCOFOIL HS MEDIUM","S"],"SF1140":["ACRYLIC MEDIUM 40 % (HTL)","S"],"SF1144":["SS PHENOLIC VARNISH","S"],"SF1149":["GUM DAMBER MEDIUM 50%","S"],"SF1153":["DEFOMER ADDITIVE","S"],"SF1157":["SPL BOPP ADDITIVE","S"],"SF1167":["NCLV GRINDING VEHICLE-A (USE-32%)","S"],"SF1168":["NCLV LET DOWN VEHICLE-B (USE-60%)","S"],"SF1174":["VINYL GRINDING VEHICLE-A (USE 32%)","S"],"SF1175":["VINYL LET DOWN VEHICLE-B (USE 60%)","S"],"SF1191":["CAB SOLUTION 20 %","S"],"SF1196":["DISPERSING SOLUTION 17K","S"],"SF1206":["ACRYLIC MEDIUM NEW","S"],"SF1209":["PE WAX PASTE 40%","S"],"SF1210":["AST ADDITIVE ES 80","S"],"SF1212":["DISPERSING SOLUTION 28K","S"],"SF1214":["VL PASTE 40% TOLUENE BASE","S"],"SF1256":["NC VARNISH 3/5 40%","S"],"SF1375":["FINAWAX S PASTE","S"],"SF1376":["EXTRUSION GRINDING VEHICLE-A (USE 32%)","S"],"SF1377":["EXTRUSION LET DOWN VEHICLE-B (USE 58%)","S"],"SF1378":["EXTRUSET AB SOLUTION","S"],"SF1379":["MEDIUM A","S"],"SF1380":["MEDIUM B","S"],"SF1381":["POLY MEDIUM (HDPE)","S"],"SF1382":["WAX ADDITIVE HDPE","S"],"SF1383":["DUSOL BLACK","S"],"SF1384":["SHELLAC CONCENTRATE 50%","S"],"SF1385":["POLY GRINDING VEHICLE -A (30 %)","S"],"SF1386":["POLY LET DOWN VEHICLE -B (62%)","S"],"SF1387":["SETCOVERSE LABEL ADDITIVE","S"],"SF1388":["SEMIFINISHED ADDITIVE AU","S"],"SF1389":["SEMIFINISHED ADDITIVE BT","S"],"SF1390":["DIS. ADDITIVE SPL EXTRUSET S-17000","S"],"SI10010":["SETCOBOND S-FL P-2736 C BLUE (DALMIA)","F"],"SI10012":["SETCOBOND S-FL UT WEATHER PLUS BLUE","F"],"SI10014":["SETCOBOND RL-GR CYAN","F"],"SI10015":["SETCOBOND RL-GR REFLEX BLUE","F"],"SI10018":["SETCOBOND TWIST CYAN BLUE","F"],"SI10019":["SETCOBOND RL-GR CYAN","F"],"SI1003":["BOPP ADDITIVE","F"],"SI10037":["SETCOBOND SP-CI CYAN","F"],"SI10040":["EXTRUSET CYAN (NEW)","F"],"SI10044":["SETCOBOND S-FL HS CYAN","F"],"SI10081":["EXTRUSET CYAN","F"],"SI10151":["SETCOBOND SP-GR CYAN","F"],"SI10185":["EXTRUSET CHATURBHUJ ROYAL BLUE","F"],"SI10186":["EXTRUSET CHATURBHUJ SKY BLUE","F"],"SI10188":["SETCOBOND S-FL DALMIA BLUE (KU)","F"],"SI10189":["SETCOBOND S-FL CYAN (FC)","F"],"SI10190":["SETCOBOND S-FL JSW BLUE (FC)","F"],"SI10193":["EXTRUSET P-540 C BLUE (DK)","F"],"SI10195":["EXTRUSET SHAKTI BLUE","F"],"SI10198":["SETCOBOND SP-GR P-4154 C BLUE","F"],"SI1043":["SURFACE ADDITIVE","F"],"SI11003":["SETCOBOND RL-GR MAGENTA","F"],"SI11006":["EXTRUSET ARSR MAGENTA","F"],"SI11007":["SETCOBOND RL-GR RUBINE RED C","F"],"SI11011":["SETCOBOND TWIST MAGENTA","F"],"SI11013":["SETCOBOND RL-GR NON AR/SR MAGENTA","F"],"SI11019":["SETCOBOND SP-CI MAGENTA","F"],"SI11020":["SETCOBOND S-FL HS MAGENTA","F"],"SI11023":["SETCOBOND RL-GR YELLOWISH MAGENTA","F"],"SI11024":["SETCOBOND RL-GR ARSR MAGENTA","F"],"SI11031":["EXTRUSET MAGENTA","F"],"SI11037":["SETCOBOND SP-CI MAGENTA","F"],"SI11047":["SETCOBOND SP-GR ARSR MAGENTA","F"],"SI11057":["SETCOBOND SP-CI HS MAGENTA","F"],"SI11059":["SETCOBOND SP-CI ARSR MAGENTA","F"],"SI11063":["SETCOBOND SP-GR MAGENTA","F"],"SI11064":["EXTRUSET MAGENTA","F"],"SI11075":["SETCOBOND SP-GR CITRO SODA MAGENTA","F"],"SI11078":["EXTRUSET ARSR MAGENTA 14","F"],"SI12004":["SETCOBOND RL-GR YELLOW","F"],"SI12007":["EXTRUSET LEMON YELLOW","F"],"SI12008":["SETCOBOND SP-GR WARM YELLOW","F"],"SI12011":["SETCOBOND S-FL ACC F2R GOLDEN YELLOW","F"],"SI12014":["SETCOBOND TWIST YELLOW","F"],"SI12015":["SETCOBOND RL-GR YELLOW","F"],"SI12017":["SETCOBOND RL-GR ARLF YELLOW","F"],"SI12018":["SETCOBOND SP-CI YELLOW","F"],"SI12025":["SETCOBOND S-FL HS YELLOW","F"],"SI12026":["EXTRUSET SPL YELLOW","F"],"SI12036":["SETCOBOND TWIST TR. YELLOW","F"],"SI12074":["EXTRUSET YELLOW SPL","F"],"SI12081":["EXTRUSET YELLOW","F"],"SI12091":["SETCOBOND SP-GR YELLOW","F"],"SI12094":["EXTRUSET TR. YELLOW","F"],"SI12102":["SETCOBOND SP-CI P-116 C YELLOW","F"],"SI12114":["EXTRUSET CHATURBHUJ DIRTY YELLOW","F"],"SI12116":["SETCOBOND S-FL P-123 C YELLOW","F"],"SI13003":["SETCOBOND RL-GR BLACK","F"],"SI13006":["SETCOBOND S-FL ACC BLACK","F"],"SI13008":["EXTRUSET BLACK","F"],"SI13010":["SETCOBOND TWIST BLACK","F"],"SI13012":["SETCOBOND RLGR BLACK","F"],"SI13015":["EXTRUSET P-443 C NCTA GREY","F"],"SI13018":["SETCOBOND SP-GR SPL BLACK (MET)","F"],"SI13021":["NC BLACK CONCENTRATE","F"],"SI13022":["SETCOBOND SP-GR SPL BLACK","F"],"SI13025":["SETCOBOND S-FL HS BLACK","F"],"SI13027":["SETCOBOND SP-CI DEW BLACK","F"],"SI13029":["SETCOBOND S-FL ACC BLACK (FC)","F"],"SI13030":["EXTRUSET ARSR P-429 C GREY","F"],"SI13035":["EXTRUSET BLACK (NEW)","F"],"SI13037":["EXTRUSET SPL BLACK","F"],"SI13038":["SETCOBOND SP-CI BLACK HS","F"],"SI13039":["SETCOBOND RL-GR BLACK HS","F"],"SI13040":["EXTRUSET BLACK MOD","F"],"SI13041":["SETCOBOND SP-GR BLACK","F"],"SI13043":["SETCOBOND SP-CI BLACK","F"],"SI13045":["SETCOBOND SP-GR SPL BLACK","F"],"SI13055":["SETCOBOND SP-CI BLACK","F"],"SI13066":["SETCOBOND SP-GR BLACK SPL","F"],"SI13069":["SETCOBOND CI FLEXO BLACK SPL","F"],"SI14003":["EXTRUSET WHITE","F"],"SI14004":["EXTRUSET WHITE HS","F"],"SI14005":["SETCOBOND RL-GR WHITE","F"],"SI14009":["SETCOBOND TWIST WHITE","F"],"SI14011":["SETCOBOND RL-GR WHITE","F"],"SI14012":["SETCOBOND S-FL HS WHITE","F"],"SI14013":["SETCOBOND SP-GR SPL WHITE (MET)","F"],"SI14014":["SETCOBOND SP-GR LABEL WHITE SPL.","F"],"SI14017":["SETCOBOND RL-GR WHITE","F"],"SI14020":["SETCOBOND PREPARTION NC WHITE CONC.","F"],"SI14037":["SETCOBOND SP-CI SPL. WHITE","F"],"SI14042":["SETCOBOND SP-CI B/G WHITE","F"],"SI14044":["SETCOBOND SP-GR WHITE","F"],"SI14045":["EXTRUSET WHITE","F"],"SI14054":["EXTRUSET WHITE SPL","F"],"SI15003":["SETCOBOND RL-GR WARM RED","F"],"SI15005":["SETCOBOND SP-GR QUICK RED","F"],"SI15009":["SETCOBOND RL-GR RED TOMATO","F"],"SI15010":["SETCOBOND S-FL ACC RED","F"],"SI15012":["SETCOBOND RLGR ARSR RED","F"],"SI15013":["SETCOBOND SP-GR RED","F"],"SI15015":["SETCOBOND S-FL P-200 C RED","F"],"SI15016":["SETCOBOND SP-GR COCA COLA RED (LF)","F"],"SI15017":["SETCOBOND SP-GR TRICONE RED","F"],"SI15047":["SETCOBOND SP-GR THUMS UP RED","F"],"SI15048":["SETCOBOND SP-GR WARM RED","F"],"SI15050":["SETCOBOND SP-CI WARM RED","F"],"SI15054":["SETCOBOND CI FLEXO P-199 C RED","F"],"SI15063":["EXTRUSET MURI RED","F"],"SI15067":["EXTRUSET RED","F"],"SI15072":["EXTRUSET RED","F"],"SI15088":["SETCOBOND SP-GR ARLF COCA COLA RED","F"],"SI15089":["EXTRUSET P-485 C RED","F"],"SI15095":["EXTRUSET RED","F"],"SI15097":["EXTRUSET WARM RED","F"],"SI15101":["SETCOBOND SP-GR ARLF CLEAR RED","F"],"SI15102":["EXTRUSET DESTINATION RED","F"],"SI15104":["EXTRUSET WARM RED (NEW)","F"],"SI15106":["SETCOBOND S-FL HS WARM RED","F"],"SI15111":["SETCOBOND S-FL RED","F"],"SI15112":["SETCOBOND SP-CI STING RED","F"],"SI15113":["EXTRUSET P-193 C RED (SHOBICA)","F"],"SI15114":["SETCOBOND SP-GR ARLF DARK RED","F"],"SI15115":["SETCOBOND S-FL JSW RED (KU)","F"],"SI15118":["EXTRUSET P-2028 C RED","F"],"SI15119":["SETCOBOND S-FL ACC RED (FC)","F"],"SI15120":["SETCOBOND SP-GR SHAKTI RED","F"],"SI15121":["SETCOBOND SP-CI BURGER RED","F"],"SI15122":["SETCOBOND SP-CI P-2035 C RED","F"],"SI16018":["SETCOBOND SP-GR P-375 C GREEN","F"],"SI16022":["SETCOBOND SP-GR PRO. GREEN","F"],"SI16023":["SETCOBOND RL-GR PROCESS GREEN","F"],"SI16041":["SETCOBOND SP-GR LIMCA BG GREEN","F"],"SI16055":["SETCOBOND SP-CI P-368 C GREEN","F"],"SI16057":["EXTRUSET P-7489 C GREEN","F"],"SI16059":["EXTRUSET GREEN","F"],"SI16061":["SETCOBOND SP-CI GREEN","F"],"SI16065":["EXTRUSET GREEN","F"],"SI16075":["SETCOBOND SP-GR BISLERI GREEN","F"],"SI16103":["SETCOBOND SPGR PROCESS GREEN","F"],"SI16106":["SETCOBOND SP-GR SPRITE GREEN NEW","F"],"SI16112":["SETCOBOND S-FL JSW GREEN (KU)","F"],"SI16113":["SETCOBOND SP-GR CRYSTAL CLEAR B/G GREEN","F"],"SI16114":["SETCOBOND SP-GR CRYSTAL CLEAR DIRTY GREEN","F"],"SI16117":["SETCOBOND SP-CI P-3537 C DK GREEN","F"],"SI16118":["SETCOBOND SP-CI BURGER GREEN","F"],"SI16119":["SETCOBOND SP-CI P-5743 C GREEN","F"],"SI16120":["EXTRUSET HS GREEN 79","F"],"SI18002":["SETCOBOND RL-GR ORANGE","F"],"SI18005":["SETCOBOND RL-GR ORANGE","F"],"SI18008":["SETCOBOND SP-CI ORANGE","F"],"SI18012":["SETCOBOND S-FL CONCRETE ORANGE","F"],"SI18023":["SETCOBOND S-FL UT PREMIUM ORANGE","F"],"SI18036":["SETCOBOND SP-CI ORANGE","F"],"SI18040":["SETCOBOND S-FL HS ORANGE","F"],"SI18044":["EXTRUSET SHAKTI ORANGE","F"],"SI18046":["SETCOBOND SP-CI ORANGE","F"],"SI18049":["EXTRUSET ORANGE","F"],"SI18055":["SETCOBOND SP-GR ORANGE","F"],"SI18060":["SETCOBOND RL-GR ARLF ORANGE","F"],"SI18062":["SETCOBOND SP-CI P-1575 C ORANGE","F"],"SI18065":["SETCOBOND S-FL DALMIA ORANGE (KU)","F"],"SI19003":["SETCOBOND S-FL P 526 C PURPLE (SUPER)","F"],"SI19006":["SETCOBOND RL-CI PINK","F"],"SI19012":["SETCOBOND S-FL XPERT PLUS PURPLE","F"],"SI19031":["SETCOBOND SP-CI P-212 C PINK","F"],"SI19032":["SETCOBOND SP-CI P-7440 C PURPLE","F"],"SI19039":["EXTRUSET P-3515 C PURPLE","F"],"SI19040":["SETCOBOND SPGR PINK","F"],"SI19041":["EXTRUSET CHATURBHUJ PURPLE","F"],"SI19044":["SETCOBOND SP-CI P-2105 C PURPLE","F"],"SI20002":["SETCOBOND RL-GR SILVER","F"],"SI20010":["SETCOBOND SP-GR SILVER","F"],"SI20014":["SPL. SILVER PASTE","F"],"SI20015":["EXTRUSET SPL SILVER","F"],"SI20020":["EXTRUSET SILVER","F"],"SI20021":["SETCOBOND SP-GR SILVER","F"],"SI21002":["EXTRUSET ARSR VIOLET","F"],"SI21005":["SETCOBOND SP-GR NON ARSR VIOLET","F"],"SI21008":["SETCOBOND RL-GR AR/SR VIOLET","F"],"SI21011":["SETCOBOND RL-GR NON ARSR VIOLET","F"],"SI21015":["SETCOBOND S-FL HS ARSR VIOLET","F"],"SI21017":["EXTRUSET ARSR P-2695 C VIOLET","F"],"SI21034":["SETCOBOND SP-GR AMUL TRICONE VIOLET","F"],"SI21045":["EXTRUSET VIOLET","F"],"SI21046":["SETCOBOND SP-CI HS ARSR VIOLET","F"],"SI21049":["SETCOBOND SP-GR ARSR VIOLET","F"],"SI21056":["EXTRUSET NON ARSR VIOLET","F"],"SI21062":["SETCOBOND RL-GR ARSR P-2735 C VIOLET","F"],"SI22003":["SETCOBOND SP-GR AMUL DARK BROWN","F"],"SI22006":["EXTRUSET P-489 C BUFF (SHOBICA)","F"],"SI22009":["EXTRUSET P-4685 C BUFF","F"],"SI22015":["SETCOBOND SP-CI P-465 C BUFF","F"],"SI22023":["SETCOBOND S-FL CONCREATE BUFF","F"],"SI22028":["SETCOBOND S-FL BROWN","F"],"SI22043":["SETCOBOND SP-GR KAMA KUMKUMADI BUFF","F"],"SI23008":["EXTRUSET SYNTHETIC GOLD","F"],"SI23011":["EXTRUSET NATRAJ GOLD","F"],"SI23016":["EXTRUSET SYNTHETIC GOLD","F"],"SI23019":["EXTRUSET A-ONE SYNTHETIC GOLD","F"],"SI23027":["EXTRUSET STAR KIDS GOLD","F"],"SI23037":["SETCOBOND SYNTHETIC GOLD","F"],"SI23044":["SETCOBOND SP-GR PREDATOR B/G GOLD","F"],"SI23048":["SETCOBOND SPGR AMUL TRICONE GOLD LACQUER","F"],"SI23053":["EXTRUSET GOLD LACQUER","F"],"SI23054":["SETCOBOND TWIST SHABNAM GOLD LACQURE","F"],"SI24502":["SETCOBOND RL-GR TRANS INK","F"],"SI24503":["SETCOBOND SP-CI OPV NEW","F"],"SI24504":["SETCOBOND SPGR MATT OPV","F"],"SI24508":["SETCOBOND TWIST TRANS INK","F"],"SI24511":["SETCOBOND RL-GR TRANSPARENT INK","F"],"SI24518":["EXTRUSET TRANS INKS (LV)","F"],"SI24519":["SETCOBOND SP-GR MATT OPV (HV)","F"],"SI24522":["SETCOBOND SP-GR OPV","F"],"SI24534":["EXTRUSET TRANSPARENT INK (MOD)","F"],"SI24535":["SETCOBOND SP-GR TRANS INK","F"],"SI24536":["SETCOBOND SP-CI TRANS INK","F"],"SI24538":["SETCOBOND SP-GR OPV (S&S)","F"],"SI24539":["SETCOBOND SP-GR HR MATT OPV","F"],"SI24540":["SETCOBOND SPL. OP TRANS INK","F"],"SI24549":["SETCOBOND SP-CI MATT OPV","F"],"SI24551":["EXTRUSET EXTENDER MEDIUM","F"],"SI24553":["SETCOBOND TWIST OPV","F"],"SI24554":["SETCOBOND SP-GR MATT OPV","F"],"SI24563":["SETCOBOND SPL MATT OPV","F"],"SI24567":["SETCOBOND SP-GR TRANS INK","F"],"SI24568":["EXTRUSET TRANS INK","F"],"SI24573":["SETCOBOND SP-GR OPV MEDIUM (DRUM PACK)","F"],"SI24575":["SETCOBOND MATT OPV (NEW)","F"],"SI24576":["NC MEDIUM LX 30/50","F"],"SI24586":["SETCOBOND SP-GR MATT OPV","F"],"SI24592":["TECHNOLOGY MEDIUM REVERSE","F"],"SI24598":["SETCOBOND S-FL HS EXTENDER MEDIUM","F"],"SI24601":["SETCOBOND SPL METALISED MEDIUM","F"],"SI25501":["SETCOLAM CYAN","F"],"SI25503":["SETCOLAM ROYAL BLUE","F"],"SI25508":["SETCOLAM P-3105 C LIGHT BLUE","F"],"SI25512":["SETCOLAM CT CYAN","F"],"SI25515":["SETCOLAM ARSR RIN BLUE","F"],"SI25524":["SETCOLAM LIFEBOY BLUE CONCENTRATE INK","F"],"SI25527":["SETCOLAM VIVEL B/G BLUE CONCENTRATE INK","F"],"SI25532":["SETCOLAM CYAN","F"],"SI25534":["SETCOLAM CYAN","F"],"SI25535":["SETCOLAM ROYAL BLUE","F"],"SI25544":["SETCOLAM P-072 C BLUE CLEAR","F"],"SI25545":["SETCOLAM ARSR ROYAL BLUE","F"],"SI25549":["SETCOLAM VIVEL B/G BLUE","F"],"SI25550":["SETCOLAM P-292 C LT BLUE","F"],"SI25552":["SETCOLAM HS CYAN -11317","F"],"SI25559":["SETCOLAM CYAN","F"],"SI25574":["SETCOLAM P-293 C BLUE","F"],"SI25582":["SETCOLAM P-321 C LT. BLUE","F"],"SI25583":["SETCOLAM ROYAL BLUE","F"],"SI25597":["SETCOLAM ROYAL BLUE 110","F"],"SI25606":["SETCOLAM CYAN CONC. INK","F"],"SI25610":["SETCOLAM NT ROYAL BLUE LACQUER","F"],"SI25611":["SETCOLAM SPRENGEL ROYAL BLUE","F"],"SI25612":["SETCOLAM P-2129 C BLUE","F"],"SI25613":["SETCOLAM P-2727 C BLUE","F"],"SI25614":["SETCOLAM CYAN (NEW)","F"],"SI25901":["SETCONE SP-GR CYAN","F"],"SI25902":["NEOTONE RL-GR CYAN","F"],"SI26501":["SETCOLAM MAGENTA","F"],"SI26502":["SETCOLAM HS MAGENTA","F"],"SI26503":["SETCOLAM AR/SR MAGENTA","F"],"SI26513":["SETCOLAM MAGENTA","F"],"SI26515":["SETCOLAM NON AR MAGENTA","F"],"SI26518":["SETCOLAM MAGENTA TONNER","F"],"SI26523":["SETCOLAM SPL HS MAGENTA (F)","F"],"SI26527":["SETCOLAM ARSR MAGENTA","F"],"SI26528":["SETCOLAM ARSR MAGENTA 14","F"],"SI26530":["SETCOLAM VINYL CONS MAGENTA","F"],"SI26532":["SETCOLAM HS MAGENTA- 11642","F"],"SI26534":["SETCOLAM MAGENTA","F"],"SI26901":["SETCONE SP-GR ARSR MAGENTA","F"],"SI26902":["NEOTONE RL-GR ARSR MAGENTA","F"],"SI26903":["SETCONE SP-GR NON ARSR MAGENTA","F"],"SI27501":["SETCOLAM YELLOW","F"],"SI27503":["SETCOLAM GOLDEN YELLOW","F"],"SI27510":["SETCOLAM YELLOW (G)","F"],"SI27512":["SETCOLAM YELLOW","F"],"SI27514":["SETCOLAM SPL YELLOW","F"],"SI27515":["SETCOLAM LEMON YELLOW","F"],"SI27517":["SETCOLAM TRP. YELLOW","F"],"SI27524":["SETCOLAM TPT YELLOW","F"],"SI27527":["SETCOLAM SPL GOLDEN YELLOW","F"],"SI27528":["SETCOLAM LF YELLOW SPL","F"],"SI27532":["SETCOLAM HS YELLOW","F"],"SI27535":["SETCOLAM ARLF FAB BG YELLOW","F"],"SI27536":["SETCOLAM YELLOW","F"],"SI27543":["SETCOLAM TRP SPL YELLOW","F"],"SI27561":["SETCOLAM GREENER YELLOW SPL","F"],"SI27569":["SETCOLAM P-116 C YELLOW","F"],"SI27901":["SETCONE SP-GR YELLOW","F"],"SI27902":["NEOTONE RL-GR YELLOW","F"],"SI28501":["SETCOLAM BLACK","F"],"SI28502":["SETCOLAM Z BLACK","F"],"SI28503":["SETCOLAM SPL BLACK","F"],"SI28507":["SETCOLAM CT BLACK","F"],"SI28512":["SETCOLAM PROCESS BLACK","F"],"SI28514":["SETCOLAM BLACK","F"],"SI28515":["SETCOLAM BLACK","F"],"SI28516":["SETCOLAM SPL BLACK","F"],"SI28523":["SETCOLAM BLACK CONCENTRATE INK","F"],"SI28528":["SETCOLAM VINYL CONC. BLACK","F"],"SI28532":["SETCOLAM HS BLACK","F"],"SI28535":["SETCOLAM BLACK","F"],"SI28536":["SETCOLAM BLACK TONNER","F"],"SI28541":["SETCOLAM NT CONC. BLACK","F"],"SI28901":["SETCONE SP-GR BLACK","F"],"SI28902":["NEOTONE RL-GR BLACK","F"],"SI29501":["SETCOLAM WHITE","F"],"SI29508":["SETCOLAM SPL WHITE","F"],"SI29510":["SETCOLAM WHITE","F"],"SI29511":["SETCOLAM HS SUPER WHITE","F"],"SI29512":["SETCOLAM SPL WHITE","F"],"SI29513":["SETCOLAM SUPER WHITE HS","F"],"SI29515":["SETCOLAM SPL HS WHITE","F"],"SI29517":["VINYL EXTENDER PASTE","F"],"SI29518":["SETCOLAM WHITE MOD.","F"],"SI29520":["SETCOGEN NXT HSTF WHITE","F"],"SI29523":["SETCOLAM NEW WHITE","F"],"SI29525":["SETCOLAM SPL WHITE (CL)","F"],"SI29536":["SETCOLAM WHITE","F"],"SI29541":["SETCOLAM WHITE","F"],"SI29547":["SETCOLAM PEARL WHITE","F"],"SI29550":["SETCOLAM WHITE","F"],"SI29901":["SETCONE SP-GR WHITE","F"],"SI30501":["SETCOLAM RED","F"],"SI30508":["SETCOLAM P-485 C RED","F"],"SI30514":["SETCOLAM LIPTON RED","F"],"SI30515":["SETCOLAM RED","F"],"SI30522":["SETCOLAM WARM RED","F"],"SI30526":["SETCOLAM HS WARM RED","F"],"SI30529":["SETCOLAM N RED","F"],"SI30530":["SETCOLAM CLEAN RED 485","F"],"SI30531":["SETCOLAM RED","F"],"SI30533":["SETCOLAM CLOSE UP RED CONCENTRATE INK","F"],"SI30535":["SETCOLAM ARSR P 485C RED","F"],"SI30536":["SETCOLAM P032C RED","F"],"SI30537":["SETCOLAM P-485 C RED","F"],"SI30542":["SETCOLAM POPULAR RED","F"],"SI30543":["SETCOLAM WARM RED TONNER","F"],"SI30546":["SETCOLAM GIFFY RED CONC. INK","F"],"SI30547":["SETCOLAM RIN RED CONC. INK","F"],"SI30558":["SETCOLAM SPL. RED","F"],"SI30571":["SETCOLAM TIGER RED","F"],"SI30573":["SETCOLAM N RED","F"],"SI30574":["SETCOLAM BLOOD RED","F"],"SI30585":["SETCOLAM KASTURI RED","F"],"SI30589":["SETCOLAM PURE CHILLY RED","F"],"SI30590":["SETCOLAM TATA RED","F"],"SI30595":["SETCOLAM LIFEBOY RED","F"],"SI30600":["SETCOLAM SPL RED HS","F"],"SI30604":["SETCOLAM SPL RED","F"],"SI30609":["SETCOLAM HS RED -11659","F"],"SI30610":["SETCOLAM VINYL CONC RED","F"],"SI30611":["SETCOLAM HS CLEAN RED","F"],"SI30614":["SETCOLAM SPL RED (WIN)","F"],"SI30615":["SETCOLAM P-2350 C RED","F"],"SI30901":["SETCONE SP-GR RED","F"],"SI30902":["SETCONE SP-GR ARLF COCA COLA RED","F"],"SI31501":["SETCOLAM WHEEL GREEN CONC. INK","F"],"SI31503":["SETCOLAM GREEN","F"],"SI31511":["SETCOLAM P-355 C GREEN","F"],"SI31518":["SETCOLAM P7483C DK GREEN","F"],"SI31519":["SETCOLAM P-802 C GREEN","F"],"SI31520":["SETCOLAM PRO GREEN","F"],"SI31526":["SETCOLAM P7488C GREEN","F"],"SI31536":["SETCOLAM P-362 C GREEN","F"],"SI31538":["SETCOLAM BISLERI GREEN","F"],"SI31546":["SETCOLAM SPL. GREEN","F"],"SI31559":["SETCOLAM VIM GREEN","F"],"SI31572":["SETCOLAM RF GREEN","F"],"SI31575":["SETCOLAM P-382 C GREEN","F"],"SI31582":["SETCOLAM EVO GREEN","F"],"SI31591":["SETCOLAM KCP GREEN","F"],"SI31592":["SETCOLAM SAMBAR GREEN","F"],"SI31593":["SETCOLAM MUTTON GREEN","F"],"SI31608":["SETCOLAM HS PROCESS GREEN","F"],"SI31618":["SETCOLAM VIM GREEN (ARIHANT)","F"],"SI31620":["SETCOLAM OPQ GREEN","F"],"SI31622":["SETCOLAM NAVCHETAN GREEN","F"],"SI31624":["SETCOLAM HS GREEN -11425","F"],"SI31627":["SETCOLAM ARSR DETTOL GREEN 3","F"],"SI31628":["SETCOLAM ARSR DETTOL GREEN 4","F"],"SI31629":["SETCOLAM ARSR DETTOL GREEN 5","F"],"SI31630":["SETCOLAM P-3536 CONC INK.","F"],"SI31632":["SETCOLAM DEEP GREEN","F"],"SI31633":["SETCOLAM P-343 C GREEN","F"],"SI31634":["SETCOLAM P-3507 C GREEN","F"],"SI31635":["SETCOLAM P-7712 C GREEN","F"],"SI31636":["SETCOLAM P-375 C GREEN","F"],"SI31637":["SETCOLAM P-2247 C GREEN","F"],"SI31638":["SETCOLAM ALPINO DK GREEN","F"],"SI31639":["SETCOLAM ALPINO BG GREEN","F"],"SI31901":["SETCONE SP-GR GREEN","F"],"SI33001":["SETCOLAM ORANGE","F"],"SI33012":["SETCOLAM OPQ ORANGE","F"],"SI33013":["SETCOLAM SPL ORANGE","F"],"SI33014":["SETCOLAM ORANGE","F"],"SI33017":["SETCOLAM CHICKEN ORANGE","F"],"SI33024":["SETCOLAM ORANGE","F"],"SI33027":["SETCOLAM LF ORANGE","F"],"SI33029":["SETCOLAM SPL.ORANGE","F"],"SI33030":["SETCOLAM P-021 C ORANGE CLEAR","F"],"SI33045":["SETCOLAM SANTOOR ORANEG LF","F"],"SI33049":["SETCOLAM SAVLON P-0151C ORANGE","F"],"SI33056":["SETCOLAM OPQ ORANGE","F"],"SI33058":["SETCOLAM HS ORANGE 13","F"],"SI33062":["SETCOLAM POHA ORANGE","F"],"SI33067":["SETCOLAM SPL ORANGE","F"],"SI33068":["SETCOLAM ARSR SANTOOR ORANGE","F"],"SI33901":["SETCONE SP-GR ORANGE","F"],"SI33903":["SETCONE SP-GR ARLF ORANGE","F"],"SI34009":["SETCOLAM PURPLE","F"],"SI34019":["SETCOLAM P-0631 C PURPLE","F"],"SI34024":["SETCOLAM PINK","F"],"SI34030":["SETCOLAM P-213 C PINK","F"],"SI34032":["SETCOLAM LUX VELVET ROSE B/G PINK","F"],"SI34033":["SETCOLAM LUX VELVET ROSE BAND PINK","F"],"SI34034":["SETCOLAM ARSR SMG PURPLE","F"],"SI34035":["SETCOLAM KAVERI PINK","F"],"SI34036":["SETCOLAM ALPINO PURPLE","F"],"SI34037":["SETCOLAM KAVERI PINK (NEW)","F"],"SI34039":["SETCOLAM P-266 C NON AR PURPLE","F"],"SI34501":["SETCOLAM SILVER","F"],"SI34507":["GR. SPECIAL SILVER PASTE","F"],"SI34511":["GR SPL SILVER","F"],"SI35001":["SETCOLAM VIOLET","F"],"SI35003":["SETCOLAM VIOLET","F"],"SI35009":["SETCOLAM ARSR VIOLET","F"],"SI35017":["SETCOLAM NON ARSR VIOLET","F"],"SI35054":["SETCOLAM ARSR VIOLET 510","F"],"SI35055":["SETCOLAM PLATINUM VIOLET","F"],"SI35060":["SETCOLAM P-2765 C BLUE","F"],"SI35401":["SETCONE SP-GR ARSR VIOLET","F"],"SI35511":["SETCOLAM P-1815 C BROWN","F"],"SI35532":["SETCOLAM P-7573 C BROWN","F"],"SI35533":["SETCOLAM W/B DK BROWN","F"],"SI35537":["SETCOLAM FLORA BUFF","F"],"SI35920":["SETCOLAM LUX GLOW JASMINE B/G BUFF","F"],"SI35921":["SETCOLAM LUX GLOW JASMINE BAND BUFF","F"],"SI35922":["SETCOLAM FLORA BUFF","F"],"SI36001":["SETCOLAM GOLD","F"],"SI36013":["SETCOLAM SYNTHETIC GOLD SPL","F"],"SI36017":["SETCOLAM METALIC GOLD","F"],"SI36022":["SETCOLAM SYNTHETIC GOLD","F"],"SI36025":["SETCOLAM GOLD LACQUER","F"],"SI36026":["SETCOLAM SPL GOLD","F"],"SI36031":["GOLD PASTE BRONZ (70%)","F"],"SI36032":["GOLD PASTE PALE (70%)","F"],"SI36033":["SETCOLAM GOLD LACQUER","F"],"SI36037":["SETCOLAM GULAB GOLD LACQUER","F"],"SI36038":["SETCOLAM FAIVE SYNTHETIC GOLD","F"],"SI36041":["SETCOLAM DEEP GOLD LACQUER (P)","F"],"SI36043":["SETCOLAM SWEET GOLD","F"],"SI36052":["SETCOLAM SYNTHETIC GOLD","F"],"SI36055":["SETCOLAM SPL GOLD (AP)","F"],"SI36057":["SETCOLAM KP SYNTHETIC GOLD","F"],"SI36060":["GOLD PASTE RICH (70%)","F"],"SI36063":["SETCOLAM KAKA SYNTHETIC GOLD","F"],"SI36064":["SETCOLAM WAGHBAKARI GOLD LACQUER","F"],"SI36067":["SETCOLAM GOLD LACQUER","F"],"SI36070":["SETCOLAM HS GOLD LACQUER","F"],"SI36071":["SETCOLAM CHIRAG GOLD","F"],"SI36072":["SETCOLAM GOLD LACQUER (P)","F"],"SI36073":["SETCOLAM W/B GOLD LACQUER","F"],"SI36074":["SETCOLAM SYNTHETIC GOLD","F"],"SI37501":["SETCOLAM TRANS INK","F"],"SI37512":["SETCOLAM TRANS INK","F"],"SI37515":["SETCOLAM TRANSPARENT INK","F"],"SI37525":["SETCOLAM NT TRANS INK","F"],"SI37526":["SETCOLAM MATT OPV","F"],"SI37529":["SPL. NT BOPP ADDITIVE","F"],"SI37538":["SETCOLAM BOPP ADDITIVE","F"],"SI37901":["SETCONE SP-GR TRANS INK","F"],"SI38501":["SETCOPLEX GR-FL CYAN","F"],"SI38510":["SETCOPLEX GR CYAN","F"],"SI38522":["SETCOPLEX LABEL ZURICA BLUE","F"],"SI38523":["SETCOVERSE LABEL CYAN","F"],"SI38524":["SETCOPLEX LABEL ARSR ROYAL BLUE","F"],"SI38528":["SETCOPLEX LABEL RAIL NEER BLUE (NEW)","F"],"SI38534":["SETCOPLEX LABEL AMETHI NEER BLUE","F"],"SI38535":["SETCOPLEX LABEL RAIL NEER BLUE (NAGP)","F"],"SI38538":["SETCOPLEX GR-FL PEARL STAR BLUE","F"],"SI38539":["SETCOPLEX D/F CYAN","F"],"SI38540":["SETCOPLEX GR-FL CYAN","F"],"SI38543":["SETCOPLEX GR-FL ROYAL BLUE","F"],"SI38544":["SETCOPLEX D/F CHICKEN BLUE","F"],"SI38551":["SETCOPLEX GRFL NAVY BLUE","F"],"SI38552":["SETCOPLEX GR-FL P-300 C BLUE","F"],"SI38565":["SETCOPLEX D/F ROYAL BLUE","F"],"SI38566":["SETCOPLEX GRFL P-2935 C BLUE","F"],"SI38570":["SETCOPLEX GR-FL CYAN","F"],"SI38573":["SETCOPLEX LABEL ROYAL BLUE","F"],"SI38575":["SETCOPLEX LABEL CYAN","F"],"SI38576":["SETCOPLEX D/F SKY BLUE","F"],"SI38577":["SETCOPLEX D/F ROYAL BLUE","F"],"SI38581":["SETCOPLEX GR-FL CYAN","F"],"SI38582":["SETCOPLEX GR-FL ROYAL BLUE","F"],"SI38611":["SETCOPLEX GR-FL KLEENAL BLUE HS","F"],"SI38658":["SETCOVERSE SP-GR CYAN","F"],"SI38663":["SETCOVERSE LABEL ROYAL BLUE","F"],"SI38664":["SETCOVERSE LABEL ZURICA BLUE","F"],"SI39301":["SETCOVEN HDPE CYAN","F"],"SI39303":["SETCOVEN HDPE P-072 BLUE (NON ARSR)","F"],"SI39312":["SETCOVEN HDPE AR ROYAL BLUE","F"],"SI39315":["SETCOVEN HDPE SKY BLUE","F"],"SI39316":["SETCOVEN HDPE ARSR P-2728 C BLUE","F"],"SI39317":["SETCOVEN HDPE ARSR P-7685 C BLUE","F"],"SI39324":["SETCOVEN HDPE P-302 C BLUE","F"],"SI39327":["SETCOVEN ARSR RCF BLUE (COATED)","F"],"SI39329":["SETCOVEN P-540 C DK BLUE (ARSR)","F"],"SI39331":["SETCOVEN HDPE ORIENT BLUE","F"],"SI39332":["SETCOVEN GR P-662 C BLUE (NON ARSR)","F"],"SI39333":["SETCOVEN HDPE P-301 C BLUE","F"],"SI39335":["SETCOVEN HDPE TATA STEEL BLUE","F"],"SI39340":["SETCOVEN TATA ANGEL BLUE","F"],"SI39342":["SETCOVEN ROYAL BLUE","F"],"SI39343":["SETCOVEN MILKO BOOSTER BLUE","F"],"SI39344":["SETCOVEN MILKO BOOSTER ROYAL BLUE","F"],"SI39345":["SETCOVEN ROYAL BLUE (NW)","F"],"SI39346":["SETCOVEN ARSR REFLEX BLUE C","F"],"SI39347":["SETCOVEN GR LD CYAN","F"],"SI39501":["SETCOPLEX GR-FL MAGENTA","F"],"SI39503":["SETCOPLEX LABEL ARSR MAGENTA","F"],"SI39509":["SETCOPLEX GR-FL ARSR MAGENTA","F"],"SI39510":["SETCOPLEX D/F MAGENTA","F"],"SI39513":["SETCOVERSE LABEL MAGENTA","F"],"SI39514":["SETCOPLEX GR MAGENTA","F"],"SI39515":["SETCOVERSE LABEL ARSR MAGENTA","F"],"SI39523":["SETCOPLEX GR-FL MAGENTA","F"],"SI39524":["SETCOPLEX GR-FL MAGENTA","F"],"SI39527":["SETCOPLEX LABEL MAGENTA","F"],"SI39529":["SETCOPLEX GR-FL MAGENTA","F"],"SI39654":["SETCOVERSE SP-GR MAGENTA","F"],"SI40301":["SETCOVEN HDPE MAGENTA","F"],"SI40305":["SETCOVEN GR LD MAGENTA","F"],"SI40501":["SETCOPLEX GR-FL YELLOW","F"],"SI40502":["SETCOPLEX GR-FL GOLDEN YELLOW","F"],"SI40503":["SETCOPLEX GR-FL LEMON YELLOW","F"],"SI40508":["SETCOPLEX D/F GOLDEN YELLOW","F"],"SI40509":["SETCOVERSE LABEL YELLOW","F"],"SI40511":["SETCOPLEX GR-FL YELLOW LACQUER","F"],"SI40516":["SETCOVERSE SPCI YELLOW","F"],"SI40517":["SETCOPLEX D/F CHICKEN R YELLOW","F"],"SI40518":["SETCOPLEX GR-FL LEMON YELLOW","F"],"SI40520":["SETCOPLEX D/F YELLOW","F"],"SI40522":["SETCOPLEX GR-FL YELLOW","F"],"SI40525":["SETCOVERSE LABEL TRP. YELLOW","F"],"SI40528":["SETCOPLEX GRFL SPL GOLDEN YELLOW","F"],"SI40530":["SETCOPLEX GR YELLOW","F"],"SI40543":["SETCOPLEX LABEL YELLOW","F"],"SI40549":["SETCOPLEX GR-FL YELLOW","F"],"SI40556":["SETCOPLEX LABEL TRPT YELLOW","F"],"SI40557":["SETCOPLEX GR-FL YELLOW","F"],"SI40558":["SETCOPLEX GR. YELLOW LACQUER (KM)","F"],"SI40654":["SETCOVERSE SP-GR YELLOW","F"],"SI40655":["SETCOVERSE SPCI P-123 C YELLOW","F"],"SI41301":["SETCOVEN HDPE YELLOW","F"],"SI41307":["SETCOVEN HDPE P-3955 C YELLOW","F"],"SI41309":["SETCOVEN HDPE P-1225C AP GN YELLOW","F"],"SI41311":["SETCOVEN GR LD YELLOW","F"],"SI41501":["SETCOPLEX GR-FL BLACK","F"],"SI41506":["SETCOVERSE LABEL BLACK","F"],"SI41508":["SETCOVERSE SPCI BLACK","F"],"SI41511":["SETCOPLEX D/F BLACK.","F"],"SI41512":["SETCOPLEX GR BLACK","F"],"SI41516":["SETCOPLEX GRFL BLACK CONC.","F"],"SI41518":["SETCOPLEX LABEL BLACK","F"],"SI41519":["SETCOPLEX GR-FL BLACK","F"],"SI41520":["SETCOPLEX GR-FL BLACK","F"],"SI41523":["SETCOPLEX GR-FL BLACK","F"],"SI41653":["SETCOVERSE SP-GR BLACK","F"],"SI42301":["SETCOVEN BLACK","F"],"SI42307":["SETCOVEN C.I. FLEXO SPL BLACK","F"],"SI42308":["SETCOVEN HDPE GR SPL BLACK","F"],"SI42309":["SETCOVEN HDPE BLACK","F"],"SI42313":["SETCOVEN HDPE UT BLACK","F"],"SI42314":["SETCOVEN GREY","F"],"SI42315":["SETCOVEN P-5415 C GREY","F"],"SI42316":["SETCOVEN GR LD BLACK","F"],"SI42501":["SETCOPLEX GR-FL WHITE","F"],"SI42502":["SETCOPLEX PLUS GR-FL OPQ. WHITE","F"],"SI42504":["SETCOPLEX GR WHITE","F"],"SI42505":["SETCOPLEX GR PVC WHITE","F"],"SI42506":["SETCOPLEX GR WHITE","F"],"SI42507":["SETCOVERSE SPCI WHITE","F"],"SI42509":["SETCOPLEX D/F WHITE","F"],"SI42511":["SETCOVERSE LABEL WHITE","F"],"SI42516":["SETCOPLEX LABEL MINERAL WHITE","F"],"SI42517":["SETCOVERSE LABEL PEARL WHITE","F"],"SI42519":["SETCOPLEX LABEL WHITE","F"],"SI42526":["SETCOPLEX LABEL PEARL WHITE","F"],"SI42651":["SETCOVERSE SP-GR WHITE","F"],"SI42652":["SETCOVERSE SP-GR WHITE","F"],"SI42654":["SETCOVERSE SP-CI WHITE (SPL)","F"],"SI43301":["SETCOVEN HDPE WHITE","F"],"SI43308":["SETCOVEN OPQ WHITE (ZIPLOCK)","F"],"SI43504":["SETCOPLEX GR-FL BLOOD RED","F"],"SI43505":["SETCOPLEX GR RED (KM)","F"],"SI43508":["SETCOPLEX GR-FL WARM RED","F"],"SI43511":["SETCOVERSE LABEL RED","F"],"SI43513":["SETCOPLEX D/F WARM RED","F"],"SI43517":["SETCOPLEX GR-FL RED","F"],"SI43518":["SETCOPLEX GR-FL RED","F"],"SI43523":["SETCOPLEX GR RED","F"],"SI43531":["SETCOPLEX GRFL P-485 C RED","F"],"SI43533":["SETCOPLEX GR-FL P-185 C RED","F"],"SI43536":["SETCOPLEX PLUS GR-FL P-1788C RED","F"],"SI43538":["SETCOPLEX GR-FL P-1925 C RED","F"],"SI43545":["SETCOPLEX D/F RED","F"],"SI43557":["SETCOPLEX LABEL RED","F"],"SI43559":["SETCOVERSE LABEL WARM RED HS","F"],"SI43561":["SETCOPLEX LABEL COKE RED","F"],"SI43585":["SETCOPLEX GR-FL PANTONE RUBINE RED C","F"],"SI43586":["SETCOPLEX GR-FL RAYMOND RED","F"],"SI43657":["SETCOVERSE SPCI WARM RED C","F"],"SI43658":["SETCOVERSE SP-GR WARM RED","F"],"SI44407":["SETCOVEN HDPE P-200 C RED","F"],"SI44410":["SETCOVEN HDPE CEMENT RED","F"],"SI44411":["SETCOVEN HDPE ARSR RED","F"],"SI44412":["SETCOVEN HDPE P-3517 C RED","F"],"SI44418":["SETCOVEN HDPE MAIDA RED","F"],"SI44425":["SETCOVEN HDPE UT RED (NEW)","F"],"SI44426":["SETCOVEN HDPE ULTRATECH RED","F"],"SI44430":["SETCOVEN P-200 C RED (NEW)","F"],"SI44431":["SETCOVEN ROFF RED","F"],"SI44432":["SETCOVEN RED (NW)","F"],"SI44433":["SETCOVEN GR LD P-185 C RED","F"],"SI44506":["SETCOPLEX GR. GREEN (KM)","F"],"SI44514":["SETCOVERSE LABEL GREEN","F"],"SI44516":["SETCOPLEX D/F CLEAN GREEN","F"],"SI44517":["SETCOPLEX GREEN","F"],"SI44519":["SETCOPLEX D/F GREEN","F"],"SI44525":["SETCOPLEX LABEL MCDOWELLS BG GREEN","F"],"SI44526":["SETCOPLEX LABEL BISLERI GREEN CONC.","F"],"SI44531":["SETCOPLEX GR-FL JAIN DK GREEN","F"],"SI44532":["SETCOPLEX GR-FL GREEN","F"],"SI44534":["SETCOPLEX D/F CHICKEN GREEN","F"],"SI44539":["SETCOPLEX LABEL BISLERI GREEN","F"],"SI44541":["SETCOPLEX LABEL BABALI GREEN","F"],"SI44553":["SETCOVERSE LABEL BISLERI GREEN","F"],"SI44554":["SETCOPLEX GR-FL P-2423 C GREEN","F"],"SI44555":["SETCOVERSE LABEL EASEAU GREEN","F"],"SI44558":["SETCOPLEX GR-FL GREEN","F"],"SI44559":["SETCOPLEX D/F GREEN","F"],"SI44561":["SETCOPLEX LABEL BISLERI GREEN","F"],"SI44594":["SETCOPLEX GRFL P-375 C GREEN","F"],"SI44596":["SETCOPLEX D/F P-361 C GREEN","F"],"SI44597":["SETCOPLEX GRFL P-321 C GREEN","F"],"SI44598":["SETCOPLEX DF P-356 C GREEN","F"],"SI44599":["SETCOPLEX GR-FL P-7466 C GREEN","F"],"SI44654":["SETCOVERSE LABEL BISLERI GREEN","F"],"SI44658":["SETCOVERSE SPCI P-343 C GREEN","F"],"SI44659":["SETCOVERSE SPCI P-7732 C GREEN","F"],"SI44660":["SETCOPLEX LABEL OXYCOOL GREEN","F"],"SI44908":["SETCOVEN HDPE P-3536 C GREEN","F"],"SI44921":["SETCOVEN PARROT GREEN","F"],"SI44922":["SETCOVEN MILKO BOOSTER B/G GREEN","F"],"SI44923":["SETCOVEN MILKO BOOSTER GREEN","F"],"SI44924":["SETCOVEN UNICON GREEN","F"],"SI44925":["SETCOVEN P-377 C GREEN","F"],"SI44926":["SETCOVEN PARROT GREEN (NW)","F"],"SI44927":["SETCOVEN HDPE SORTEX CLEAN GREEN","F"],"SI44928":["SETCOVEN HDPE PARIVARTAN GREEN","F"],"SI46002":["SETCOPLEX PLUS GR-FL ORANGE","F"],"SI46003":["SETCOPLEX GR-FL ORANGE","F"],"SI46008":["SETCOVERSE LABEL ORANGE","F"],"SI46010":["SETCOPLEX D/F ORANGE","F"],"SI46015":["SETCOPLEX LABEL ORANGE","F"],"SI46018":["SETCOPLEX GR ORANGE (KM)","F"],"SI46021":["SETCOPLEX GR ORANGE","F"],"SI46030":["SETCOPLEX LABEL FANTA ORANGE","F"],"SI46032":["SETCOPLEX GR-FL ORANGE","F"],"SI46037":["SETCOPLEX GR ORANGE LACQUER (KM)","F"],"SI46041":["SETCOPLEX GR-FL SANDWICH BREAD ORANGE","F"],"SI46901":["SETCOVEN HDPE ORANGE","F"],"SI46904":["SETCOVEN HDPE ARLF ORANGE","F"],"SI46912":["SETCOVEN VISUN ORANGE","F"],"SI46913":["SETCOVEN JSW ORANGE","F"],"SI46915":["SETCOVEN UNICON ORANGE","F"],"SI46916":["SETCOVEN P-1505 C ORANGE","F"],"SI46917":["SETCOVEN HDPE SORTEX ORANGE","F"],"SI46918":["SETCOVEN ARSR P-165 C ORANGE","F"],"SI46919":["SETCOVEN GR LD ORANGE","F"],"SI47007":["SETCOPLEX GR-FL PINK","F"],"SI47015":["SETCOPLEX GRFL P-211 C LT. PINK","F"],"SI47402":["SETCOVEN GR LD RHODAMINE RED","F"],"SI47501":["SETCOPLEX GR-FL SILVER","F"],"SI47502":["SETCOPLEX GR-FL SPL SILVER","F"],"SI47505":["SETCOPLEX LABEL SILVER","F"],"SI47801":["SETCOVEN SILVER","F"],"SI47901":["SETCOVERSE LABEL SILVER","F"],"SI47903":["SETCOVERSE LABEL SPL SILVER","F"],"SI48001":["SETCOPLEX GR-FL VIOLET","F"],"SI48003":["SETCOVERSE LABEL VIOLET","F"],"SI48004":["SETCOPLEX LABEL ARSR VIOLET","F"],"SI48005":["SETCOPLEX GR VIOLET","F"],"SI48006":["SETCOVERSE LABEL ARSR VIOLET","F"],"SI48008":["SETCOPLEX GR NON AR VIOLET (KM)","F"],"SI48009":["SETCOPLEX PLUS GR-FL VIOLET","F"],"SI48010":["SETCOPLEX D/F VIOLET","F"],"SI48012":["SETCOPLEX LABEL AMETHI NEER PURPLE","F"],"SI48023":["SETCOPLEX D/F CHICKEN ARSR PURPLE","F"],"SI48027":["SETCOPLEX LABEL VIOLET","F"],"SI48029":["SETCOPLEX LABEL NISARGA PURPLE","F"],"SI48031":["SETCOPLEX GR-FL VIOLET","F"],"SI48039":["SETCOPLEX LABEL RAIL NEER PURPLE (NEW)","F"],"SI48041":["SETCOPLEX PLUS GR-FL P-2725 C PURPLE","F"],"SI48042":["SETCOPLEX GRFL P-267 C PURPLE","F"],"SI48652":["SETCOVERSE SP-GR ARSR VIOLET","F"],"SI48901":["SETCOVEN HDPE VIOLET","F"],"SI48904":["SETCOVEN HDPE P-274 C VIOLET","F"],"SI49001":["SETCOPLEX GRFL BROWN","F"],"SI49002":["SETCOPLEX GR-FL DAZZY BREVO BROWN","F"],"SI49003":["SETCOPLEX D/F CHICKEN LT. BROWN","F"],"SI49009":["SETCOPLEX GR-FL BROWN","F"],"SI49020":["SETCOPLEX GR-FL P-1815 C BROWN","F"],"SI49021":["SETCOPLEX GR-FL KHARI BROWN HS","F"],"SI49203":["SETCOVEN HDPE FENA BROWN","F"],"SI49204":["SETCOVEN HDPE ARSR KPK BROWN","F"],"SI49205":["SETCOVEN MAROON (NW)","F"],"SI49301":["SETCOVEN HDPE SOOJI BROWN","F"],"SI49509":["SETCOPLEX GR SYNTHETIC GOLD","F"],"SI49513":["SETCOPLEX LABEL SPL GOLD","F"],"SI49515":["SETCOPLEX LABEL BUDWEISER GOLD","F"],"SI49522":["SETCOPLEX LABEL PREMIUM GOLD","F"],"SI49525":["SETCOPLEX LABEL BLUE IN METALIC GOLD","F"],"SI49528":["SETCOVERSE LABEL BUDWISER GOLD","F"],"SI49901":["SETCOVEN GOLD","F"],"SI49902":["SETCOVEN HDPE SORTEX GOLD","F"],"SI50503":["SETCOPLEX LABEL KINLEY GREY","F"],"SI51003":["SETCOVERSE LABEL MEDIUM","F"],"SI51006":["SETCOPLEX GR-FL TRANS INK","F"],"SI51008":["SETCOVERSE LABEL OPV","F"],"SI51009":["SETCOPLEX GR TRANS INKS (KM)","F"],"SI51010":["SETCOVERSE SPCI TRANSPARENT INK","F"],"SI51013":["SETCOPLEX GR TRANS INK","F"],"SI51014":["SETCOPLEX GR MATT OPV","F"],"SI51016":["SETCOPLEX D/F TRANS INK","F"],"SI51019":["SETCOPLEX GR-FL MATT OPV","F"],"SI51022":["SETCOVERSE OP TRANS INK","F"],"SI51023":["SETCOPLEX LABEL TRANS INK","F"],"SI51029":["SETCOPLEX GR-FL TRANS INK","F"],"SI51502":["SETCOVERSE SP-GR TRANS INK","F"],"SI51505":["SETCOVERSE LABEL OPV","F"],"SI51601":["SETCOVEN HDPE TRANS INK","F"],"SI51602":["SETCOVEN MEDIUM (NW)","F"],"SI51606":["SETCOVEN UNTREATED MATT OPV","F"],"SI51607":["SETCOVEN GR LD MEDIUM","F"],"SI52001":["SETCOFOIL P-GR PEACOCK BLUE","F"],"SI52007":["SETCOFOIL D-GR CYAN","F"],"SI52011":["SETCOFOIL BLUE TONNER DB","F"],"SI52015":["SETCOFOIL REFLEX BLUE","F"],"SI52019":["SETCOFOIL 10083 BLUE","F"],"SI52023":["SETCOFOIL UV VISIBLE BLUE","F"],"SI52026":["SETCOFOIL TR ROYAL BLUE","F"],"SI52032":["SETCOFOIL D-GR ROYAL BLUE","F"],"SI52036":["SETCOFOIL P 072C BLUE","F"],"SI52038":["SETCOFOIL P072C BLUE","F"],"SI52064":["SETCOFOIL HHR-GR CYAN BLUE","F"],"SI52066":["SETCOFOIL NON-TOXIC CYAN BLUE","F"],"SI52085":["SETCOFOIL P-GR ROYAL BLUE","F"],"SI52090":["SETCOFOIL HHR-GR REFLEX BLUE","F"],"SI52094":["SETCOFOIL NON TOXIC CRCN ROYAL BLUE","F"],"SI52095":["SETCOFOIL NON-TOXIC ROYAL BLUE","F"],"SI52097":["SETCOFOIL ROYAL BLUE","F"],"SI53001":["SETCOFOIL D-GR MAGENTA","F"],"SI53002":["SETCOFOIL P-GR MAGENTA","F"],"SI53007":["SETCOFOIL NON TOXIC MAGENTA","F"],"SI53015":["SETCOFOIL D-GR MAGENTA SPL","F"],"SI54001":["SETCOFOIL P-GR YELLOW","F"],"SI54002":["SETCOFOIL LEMON YELLOW","F"],"SI54003":["SETCOFOIL P-GR TRP. YELLOW","F"],"SI54004":["SETCOFOIL YELLOW TONNER DB","F"],"SI54010":["SETCOFOIL NON TOXIC CROCIN YELLOW","F"],"SI54015":["SETCOFOIL HHR-GR TRP YELLOW","F"],"SI54017":["SETCOFOIL NON TOXIC YELLOW","F"],"SI55001":["SETCOFOIL D-GR BLACK","F"],"SI55003":["SETCOFOIL BLACK TONNER","F"],"SI55004":["SETCOFOIL P-GR BLACK","F"],"SI55009":["SETCOFOIL D-GR Z BLACK","F"],"SI55014":["SETCOFOIL HHR-GR BLACK","F"],"SI55016":["SETCOFOIL NONTOXIC BLACK","F"],"SI55024":["SETCOFOIL P-GR BLACK","F"],"SI56001":["SETCOFOIL P-GR WHITE","F"],"SI56002":["SETCOFOIL NONTOXIC WHITE","F"],"SI56004":["SETCOFOIL SUPER WHITE","F"],"SI56007":["SETCOFOIL SPL BG WHITE","F"],"SI56008":["SETCOFOIL SPL OPQ WHITE","F"],"SI57001":["SETCOFOIL D-GR RED","F"],"SI57005":["SETCOFOIL RED TONNER 20%","F"],"SI57034":["SETCOFOIL D-GR HS RED","F"],"SI57054":["SETCOFOIL P-1788 C RED","F"],"SI57055":["SETCOFOIL D-GR HS RED","F"],"SI57059":["SETCOFOIL HOMADEX RED","F"],"SI58002":["SETCOFOIL GREEN","F"],"SI58004":["SETCOFOIL GREEN TONNER 20%","F"],"SI58024":["SETCOFOIL D-GR AJANTA GREEN","F"],"SI58043":["SETCOFOIL P-7732C GREEN","F"],"SI58044":["SETCOFOIL KOFLET-H DK GREEN","F"],"SI58061":["SETCOFOIL CEFTILE GREEN","F"],"SI58063":["SETCOFOIL NON-TOXIC CRSL GREEN","F"],"SI58066":["SETCOFOIL D-GR P-2426 C GREEN","F"],"SI59501":["SETCOFOIL D-GR ORANGE","F"],"SI59503":["SETCOFOIL NON-TOXIC ORANGE","F"],"SI59504":["SETCOFOIL ORANGE TONNER","F"],"SI59515":["SETCOFOIL P-GR P-7569 C ORANGE","F"],"SI59524":["SETCOFOIL NON TOXIC CRSL ORANGE","F"],"SI59525":["SETCOFOIL P-GR VIN-C B/G ORANGE","F"],"SI60501":["SETCOFOIL PINK TONNER","F"],"SI61502":["SETCOFOIL VIOLET","F"],"SI61505":["SETCOFOIL NONTOXIC ARSR VIOLET","F"],"SI62001":["SETCOFOIL BROWN","F"],"SI62004":["SETCOFOIL P-GR SPL BROWN","F"],"SI62501":["SETCOFOIL D-GR GOLD","F"],"SI62505":["GRAVURE GOLD PASTE","F"],"SI62506":["SETCOFOIL D-GR HS GOLD LACQUER (10%)","F"],"SI62517":["SETCOFOIL HS GOLD","F"],"SI62520":["SETCOFOIL PULMODOX GOLD","F"],"SI64001":["SETCOFOIL TRANS INK","F"],"SI64002":["SETCOFOIL HEAT SEAL MEDIUM","F"],"SI64003":["SETCOFOIL NON TOXIC TRANS INK","F"],"SI64007":["GR. FOIL WASH 2.5%","F"],"SI64016":["SETCOFOIL OPV","F"],"SI64028":["SETCOFOIL MULTIPURPOSE OPV","F"],"SI64032":["SETCOFOIL NC COATING","F"],"SI64041":["SETCOFOIL HR OP TRANS INK.","F"],"SI64052":["GRAVURE FOIL WASH (3.8 %)","F"],"SI64053":["GR. 2K OPV INK","F"],"SI64054":["GR 2K HARDNER","F"],"SI64055":["SETCOFOIL SPL HS LACQUER","F"],"SI64057":["SETCOFOIL METAL GLOSS OPV","F"],"SI64062":["MEDIUM K-HSX","F"],"SI65001":["SETCOVYN CYAN","F"],"SI65004":["SETCOVYN NT CYAN","F"],"SI65008":["SETCOVYN CYAN","F"],"SI65014":["SETCOVYN ROTOSHRINK P 072C BLUE","F"],"SI65017":["SETCOVYN RD CYAN","F"],"SI65021":["SETCOVYN RD ROYAL BLUE","F"],"SI65411":["SETCO HTL ROYAL BLUE","F"],"SI65414":["SETCO HTL P-293C BLUE","F"],"SI65415":["SETCO HTL HS CYAN","F"],"SI65418":["SETCO HTL ARSR REFLEX BLUE","F"],"SI65501":["SETCOVYN MAGENTA","F"],"SI65502":["SETCOVYN NT NON AR MAGENTA","F"],"SI65503":["SETCOVYN MAGENTA","F"],"SI65506":["SETCOVYN RD MAGENTA","F"],"SI65904":["SETCO HTL HS ARSR MAGENTA","F"],"SI66001":["SETCOVYN YELLOW","F"],"SI66002":["SETCOVYN NT YELLOW","F"],"SI66005":["SETCOVYN YELLOW","F"],"SI66008":["SETCOVYN RD YELLOW","F"],"SI66009":["SETCOVYN RD TRP. YELLOW","F"],"SI66412":["SETCO HTL ARLF YELLOW (NEW)","F"],"SI66501":["SETCOVYN BLACK","F"],"SI66502":["SETCOVYN NT BLACK","F"],"SI66508":["SETCOVYN RD BLACK","F"],"SI66903":["SETCO HTL Z BLACK","F"],"SI67002":["SETCOVYN WHITE","F"],"SI67008":["SETCOVYN NT WHITE","F"],"SI67009":["SETCOVYN RD WHITE","F"],"SI67014":["SETCOVYN RD PEARL WHITE","F"],"SI67017":["SETCOVYN NT SPL. WHITE","F"],"SI67018":["SETCOVYN NT SPL WHITE","F"],"SI67020":["SETCOVYN CI WHITE","F"],"SI67021":["SETCOVYN WHITE (LS)","F"],"SI67401":["SETCO HTL WHITE","F"],"SI67403":["SETCO HTL HS WHITE","F"],"SI67501":["SETCOVYN NT WARM RED","F"],"SI67502":["SETCOVYN KRISHNA HALWA RED","F"],"SI67504":["SETCOVYN WARM RED","F"],"SI67512":["SETCOVYN RD WARM RED","F"],"SI67901":["SETCO HTL WARM RED","F"],"SI67903":["SETCO HTL HS LF RED","F"],"SI67913":["SETCO HTL P-3546 C RED","F"],"SI67914":["SETCO HTL ARLF RED","F"],"SI68002":["SETCOVYN NT PROCESS GREEN","F"],"SI68007":["SETCOVYN RD GREEN","F"],"SI68014":["SETCOVYN NT MANGO GREEN","F"],"SI68016":["SETCOVYN P-2270 C GREEN","F"],"SI68410":["SETCO HTL HS ARLF GREEN","F"],"SI68411":["SETCO HTL ARLF P-349 C GREEN","F"],"SI68502":["SETCOVYN NT ORANGE","F"],"SI68503":["SETCOVYN ORANGE","F"],"SI68505":["SETCOVYN RD ORANGE","F"],"SI68506":["SETCOVYN ORANGE","F"],"SI68510":["SETCOVYN NT LEPTACAL-AD B/G ORANGE","F"],"SI68906":["SETCO HTL ARLF ORANGE","F"],"SI69002":["SETCOVYN SILVER","F"],"SI69004":["SETCOVYN RD SPL SILVER","F"],"SI69005":["SETCOVYN NT BLACK BON SILVER","F"],"SI69401":["SETCO HTL SILVER","F"],"SI69502":["SETCOVYN NT ARSR VIOLET","F"],"SI69503":["SETCOVYN ARSR VIOLET","F"],"SI69506":["SETCOVYN RD ARSR VIOLET","F"],"SI69510":["SETCOVYN RD MOOV VIOLET","F"],"SI69511":["SETCOVYN RD VIOLET","F"],"SI69901":["SETCO HTL ARSR VIOLET","F"],"SI70001":["SETCOVYN RD OCEAN BUFF","F"],"SI70505":["SETCOVYN REVITAL BG-GOLD","F"],"SI70507":["SETCOVYN REVITAL BAND GOLD","F"],"SI70508":["SETCOVYN RD GOLD","F"],"SI70512":["SETCO HTL YELLOW LACQUER","F"],"SI70515":["SETCO HTL SPL GOLD","F"],"SI70517":["SETCOVYN RD KARIES B/G GOLD","F"],"SI70518":["SETCOVYN RD-E BON GOLD","F"],"SI71001":["SETCOVYN NT TRANSPARENT INK","F"],"SI71004":["SETCOVYN MEDIUM","F"],"SI71005":["SETCOVYN MATT OPV","F"],"SI71008":["SETCOVYN MATT OPV","F"],"SI71011":["SETCOVYN RD TRANS INK","F"],"SI71016":["SETCOVYN RD-E TRANS INK","F"],"SI71405":["SETCO HTL NT MEDIUM","F"],"SI71406":["SETCO HTL MEDIUM","F"],"SI71408":["SETCO HTL SPL MEDIUM FOR SPL BLACK ONLY","F"],"SI71501":["SETCOPRINT CYAN","F"],"SI71504":["SETCOPRINT ONP BLUE","F"],"SI71538":["SETCOPRINT P-286 C BLUE","F"],"SI71559":["SETCOPRINT SPL ROYAL BLUE","F"],"SI71561":["SETCOPRINT SPL HS BLUE (BROWN)","F"],"SI72001":["SETCOPRINT MAGENTA","F"],"SI72510":["SETCOPRINT SPL YELLOW","F"],"SI72526":["SETCOPRINT P-587 C YELLOW","F"],"SI73001":["SETCOPRINT BLACK","F"],"SI73505":["SETCOPRINT RAINBOW PEARL WHITE","F"],"SI74001":["SETCOPRINT RED","F"],"SI74009":["SETCOPRINT P-485 C ARSR RED","F"],"SI74022":["SETCOPRINT P 185 C RED","F"],"SI74045":["SETCOPRINT SONA MOJA RED","F"],"SI74501":["SETCOPRINT GREEN","F"],"SI74504":["SETCOPRINT ELECTRAL GREEN","F"],"SI74510":["SETCOPRINT PROCESS GREEN","F"],"SI74519":["SETCOPRINT P 354C GREEN","F"],"SI74559":["SETCOPRINT P-7489 C GREEN","F"],"SI74560":["SETCOPRINT ARJUMA GREEN","F"],"SI75001":["SETCOPRINT ORANGE","F"],"SI76001":["SETCOPRINT SILVER (AL)","F"],"SI76003":["SETCOPRINT BOARD SILVER","F"],"SI76016":["SETCOPRINT SHEETFED ROTO SILVER","F"],"SI76017":["SETCOPRINT SHEETFED ROTO SPL SILVER","F"],"SI76501":["SETCOPRINT ARSR VIOLET","F"],"SI77001":["SETCOPRINT SYNTHETIC GOLD (AL)","F"],"SI77005":["SETCOPRINT SYNTHETIC GOLD (AL PR PAPER)","F"],"SI77022":["SETCOPRINT CHAMPION GOLD","F"],"SI77028":["SETCOPRINT GF BAND GOLD","F"],"SI77029":["SETCOPRINT BOARD SYNTHETIC GOLD (ES)","F"],"SI77031":["SETCOPRINT BOARD HIGH SHINE SYNTHETIC GOLD (ES)","F"],"SI77502":["SETCOPRINT LIGHT BUFF","F"],"SI77504":["SETCOPRINT LIGHT BUFF YELLOW PAPER","F"],"SI78002":["SETCOPRINT TRANS INK","F"],"SI78003":["SETCOPRINT GLOSSY OPV","F"],"SI78008":["SETCOPRINT SPL MEDIUM FOR SILVER","F"],"SI78018":["SETCOPRINT SPL MEDIUM FOR PEARL","F"],"SI90002":["SPECTROLAM CYAN BLUE","F"],"SI90008":["SPECTROLAM CYAN","F"],"SI90009":["SPECTROLAM NTNK ARLF CYAN","F"],"SI90013":["SPECTROLAM NTNK CYAN","F"],"SI90035":["SPECTROLAM CONC. BLUE 15.3","F"],"SI90036":["SPECTROLAM NT CYAN","F"],"SI90037":["SPECTROLAM NT MOMS MAKHANA BG. BLUE","F"],"SI90038":["SPECTROLAM NT MOMS MAKHANA ROYAL BLUE","F"],"SI90502":["SPECTROLAM NTNK MAGENTA","F"],"SI90503":["SPECTROLAM NTNK ARSR MAGENTA","F"],"SI90506":["SPECTROLAM NTNK ARLF MAGENTA","F"],"SI90508":["SPECTROLAM NTNK MAGENTA","F"],"SI90512":["SPECTROLAM NTNK ARSR MAGENTA","F"],"SI90518":["SPECTROLAM ARSR MAGENTA","F"],"SI90521":["SPECTROLAM NTNK ARLF MAGENTA","F"],"SI90527":["SPECTROLAM CONC. RED 146","F"],"SI90530":["SPECTROLAM NT ARSR MAGENTA","F"],"SI91002":["SPECTROLAM NTNK YELLOW","F"],"SI91005":["SPECTROLAM YELLOW","F"],"SI91014":["SPECTROLAM NTNK YELLOW","F"],"SI91015":["SPECTROLAM NTNK YELLOW","F"],"SI91017":["SPECTROLAM NTNK TRP.YELLOW","F"],"SI91020":["SPECTROLAM NTNK ARLF YELLOW","F"],"SI91026":["SPECTROLAM WARM YELLOW","F"],"SI91036":["SPECTROLAM CONC. YELLOW 14","F"],"SI91038":["SPECTROLAM NT YELLOW","F"],"SI91040":["SPECTROLAM NTNK YELLOW (NEW MOD)","F"],"SI91502":["SPECTROLAM BLACK","F"],"SI91503":["SPECTROLAM NTNK CONCENTRATE BLACK","F"],"SI91504":["SPECTROLAM NTNK BLACK","F"],"SI91505":["SPECTROLAM NTNK ARLF BLACK","F"],"SI91506":["SPECTROLAM NTNK ARLF BLACK","F"],"SI91511":["SPECTROLAM NTNK BLACK","F"],"SI91512":["SPECTROLAM NTNK BLACK","F"],"SI91518":["SPECTROBOND NTNK BLACK","F"],"SI91521":["SPECTROLAM CONC. BLACK","F"],"SI91523":["SPECTROLAM NT BLACK","F"],"SI92002":["SPECTROLAM NTNK WHITE","F"],"SI92003":["SPECTROLAM WHITE","F"],"SI92004":["SPECTROLAM NTNK WHITE","F"],"SI92007":["SPECTROLAM NTNK WHITE (SPL)","F"],"SI92011":["SPECTROLAM NTNK WHITE","F"],"SI92012":["SPECTROLAM NTNK WHITE","F"],"SI92018":["SPECTROLAM CONC. WHITE","F"],"SI92019":["SPECTROLAM NTNK WHITE NXT","F"],"SI92021":["SPECTROLAM NT WHITE","F"],"SI92515":["SPECTROBOND NTNK GG RED","F"],"SI92519":["SPECTROLAM NTNK WARM RED","F"],"SI92528":["SPECTROLAM CONC. MAGENTA (PR 57.1)","F"],"SI92530":["SPECTROLAM NT WARM RED","F"],"SI92531":["SPECTROLAM NT SPL RED HS","F"],"SI93003":["SPECTROLAM NTNK PR. GREEN","F"],"SI93009":["SPECTROLAM NTNK PRO. GREEN","F"],"SI93015":["SPECTROLAM NTNK ARLF GREEN","F"],"SI93025":["SPECTROLAM NT GREEN","F"],"SI93026":["SPECTROLAM YUNAY PISTACHIOS GREEN","F"],"SI94002":["SPECTROLAM NTNK ORANGE","F"],"SI94008":["SPECTROLAM NTNK ORANGE","F"],"SI94011":["SPECTROLAM ARLF ORANGE","F"],"SI94020":["SPECTROLAM NTNK ORANGE","F"],"SI94021":["SPECTROLAM NT ORANGE","F"],"SI94603":["SPECTROLAM YUNAY PISTACHIOS GREY","F"],"SI94604":["SPECTROLAM NT MOMS MAKHANA BROWN","F"],"SI95007":["SPECTROLAM NTNK ARSR VIOLET","F"],"SI95010":["SPECTROLAM NT/NK ARSR VIOLET","F"],"SI95018":["SPECTROLAM CONC. VIOLET 23","F"],"SI95020":["SPECTROLAM NT ARSR VIOLET","F"],"SI96006":["SPECTROLAM NTNK SYNTHETIC GOLD","F"],"SI96502":["GR. PRIMER","F"],"SI96503":["SPECTROLAM TRANS INK","F"],"SI96504":["SPECTROLAM NTNK TRANS INK","F"],"SI96505":["SPECTROLAM NTNK TRANS INK","F"],"SI96516":["GR. 2K MATT OPV","F"],"SI96527":["TECHNOLOGY MEDIUM REVERSE(SPC)","F"],"SI96529":["SPECTROLAM NTNK TRANS INKS","F"],"SI96530":["SPECTROLAM NT TRANS INK","F"],"SI97802":["RETARDER ABS","F"],"SI97807":["RETARDER (VRAJ)","F"],"SI97810":["REDUCER S-FL","F"],"SI97813":["RETARDER-310","F"],"SI97814":["RETARDER 250","F"],"SI97817":["REDUCER","F"],"SI97818":["RETARDER (EP)","F"],"SI97819":["REDUCER (GURUKRUPA)","F"],"SI97820":["THINNER 110","F"],"SI97821":["THINNER 130","F"],"SI97822":["THINNER 160","F"],"SI97824":["THINNER 190","F"],"SI97834":["N-PROPYL ACETATE (NPAC)","F"],"SI97836":["RETARDER (PMA)","F"],"SI97837":["C I FLEXO REDUCER","F"],"SI97841":["FLEXO REDUCER NEW","F"],"SI97843":["REDUCER SETCOPLEX GR. INKS (DILUENT)","F"],"SI97845":["FLEXO REDUCER (7-2-1)","F"],"SI97846":["GR-FL SD RETARDER","F"],"SI97875":["GRAVURE TRANSPARENT INK H.S.(C.A.F.)","F"],"SI97880":["REDUCER C.I. FLEXO","F"],"SI97882":["SETCOVEN HDPE INK REDUCER","F"],"SI97885":["S-FL SPL MIX REDUCER","F"],"SI97908":["THINNER-120","F"],"SI97920":["REDUCER FAST DRYING","F"],"SI98003":["SPECTROLAM NTNK SILVER (SPL)","F"]};
+let MASTER_DB = {};
+let batches = [];
+let activeMode = 'grinding';
+let cachedGroqModel = '';
+
+const SHADE_WORDS = new Set([
+  "CYAN","BLUE","MAGENTA","RED","RUBINE","YELLOW","ORANGE",
+  "BLACK","WHITE","GREEN","VIOLET","PINK","PURPLE","GOLD",
+  "SILVER","BROWN","BUFF","TRANS","TRANSPARENT","OPV","EXTENDER","MEDIUM"
+]);
+
+function initMasterDB() {
+  MASTER_DB = {};
+  for (const [k, pair] of Object.entries(EMBEDDED_MASTER_DB)) {
+    MASTER_DB[k] = {
+      name: pair[0],
+      category: pair[1] === 'C' ? 'CONCENTRATE' : (pair[1] === 'S' ? 'SEMI-FINISHED' : 'FINISHED GOODS')
+    };
+  }
+  try {
+    const extra = JSON.parse(localStorage.getItem('setco_extra_master_db') || '{}');
+    for (const [k, v] of Object.entries(extra)) {
+      if (v && v.name) MASTER_DB[k] = v;
+    }
+  } catch (e) {}
+  document.getElementById('dbBadge').textContent = 'DB: ' + Object.keys(MASTER_DB).length;
+  const dl = document.getElementById('masterCodesList');
+  dl.innerHTML = Object.entries(MASTER_DB).map(([k, v]) => `<option value="${formatDisplayCode(k)}">${v.name}</option>`).join('');
+}
+
+function todayStr() {
+  const d = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return String(d.getDate()).padStart(2,'0') + '-' + months[d.getMonth()] + '-' + d.getFullYear();
+}
+
+function normalizeCode(raw) {
+  let c = String(raw || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
+  const nd = c.replace(/-/g, '');
+  if (/^(?:SI)?(EXT|NCC|PAC|PVC|SF|ENG)\d{3,6}$/.test(nd)) return nd.replace(/^SI/, '');
+  c = c.replace(/^(?:SI|S1|5I)[-\s]*/, '');
+  if (/^51\d{5,6}$/.test(c)) c = c.slice(2);
+  return c ? 'SI-' + c : '';
+}
+
+function canonicalKey(raw) {
+  const c = String(raw || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!c) return '';
+  if (MASTER_DB[c]) return c;
+  if (c.startsWith('SI') && MASTER_DB[c.slice(2)]) return c.slice(2);
+  if (MASTER_DB['SI' + c]) return 'SI' + c;
+  return c;
+}
+
+function formatDisplayCode(key) {
+  const k = String(key || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (k.startsWith('SI') && k.length > 2) return 'SI-' + k.slice(2);
+  return k;
+}
+
+function normalizeBatch(raw) {
+  let b = String(raw || '').trim().toUpperCase().replace(/\s+/g, '').replace(/[^0-9A-Z-]/g, '');
+  if (/^290\d{8}$/.test(b)) b = '290-' + b.slice(3);
+  return b;
+}
+
+function normalizeQty(raw) {
+  const m = String(raw || '').replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+  if (!m) return '0 KGS';
+  const v = parseFloat(m[1]);
+  return (Math.abs(v - Math.round(v)) < 1e-6 ? Math.round(v) : v.toFixed(2)) + ' KGS';
+}
+
+function validateDate(rawDate, batchNo) {
+  const fallback = todayStr();
+  if (!rawDate || !String(rawDate).trim()) return fallback;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const s = String(rawDate).trim();
+  let day = null, mon = null, yr = null;
+  let m = s.match(/^(\d{1,2})[-\/\s]([A-Za-z]{3})[-\/\s](\d{2,4})$/);
+  if (m) {
+    day = parseInt(m[1], 10);
+    mon = months.findIndex(x => x.toLowerCase() === m[2].toLowerCase()) + 1;
+    yr = parseInt(m[3], 10); if (yr < 100) yr += 2000;
+  } else {
+    m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})$/);
+    if (m) {
+      day = parseInt(m[1], 10); mon = parseInt(m[2], 10);
+      yr = parseInt(m[3], 10); if (yr < 100) yr += 2000;
+    }
+  }
+  if (!day || !mon || mon < 1 || mon > 12 || !yr) return fallback;
+  const bm = String(batchNo || '').match(/290-?(\d{2})(\d{2})\d{4}/);
+  if (bm) {
+    const bMon = parseInt(bm[1], 10), bYr = 2000 + parseInt(bm[2], 10);
+    if (bMon >= 1 && bMon <= 12 && (mon !== bMon || yr !== bYr)) { mon = bMon; yr = bYr; }
+  }
+  const dt = new Date(yr, mon - 1, day);
+  if (isNaN(dt.getTime()) || Math.abs((dt - new Date()) / 86400000) > 60) return fallback;
+  return String(day).padStart(2, '0') + '-' + months[mon - 1] + '-' + yr;
+}
+
+function tokenSimilarity(a, b) {
+  const sa = String(a || '').toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').trim();
+  const sb = String(b || '').toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').trim();
+  if (!sa || !sb) return 0;
+  if (sa === sb) return 1;
+  const ta = new Set(sa.split(/\s+/)), tb = new Set(sb.split(/\s+/));
+  let inter = 0; ta.forEach(w => { if (tb.has(w)) inter++; });
+  return inter / Math.max(1, new Set([...ta, ...tb]).size);
+}
+
+function extractShades(s) {
+  const out = new Set();
+  String(s || '').toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').split(/\s+/).forEach(w => { if (SHADE_WORDS.has(w)) out.add(w); });
+  return out;
+}
+
+function crossCheckBatch(item) {
+  const key = canonicalKey(item.code);
+  const ocrName = String(item.name || '').toUpperCase().replace(/^SI[-\s]?\d{4,6}\s*/i, '').trim();
+  const ocrShades = extractShades(ocrName);
+
+  let bestKey = '', bestScore = 0;
+  for (const [k, info] of Object.entries(MASTER_DB)) {
+    let sc = tokenSimilarity(ocrName, info.name);
+    const cs = extractShades(info.name);
+    if (ocrShades.size && cs.size && ![...ocrShades].some(x => cs.has(x))) sc *= 0.4;
+    if (sc > bestScore) { bestScore = sc; bestKey = k; }
+  }
+
+  if (MASTER_DB[key]) {
+    const m = MASTER_DB[key];
+    const mShades = extractShades(m.name);
+    const shadeConflict = ocrShades.size > 0 && mShades.size > 0 && ![...ocrShades].some(x => mShades.has(x));
+    const sim = tokenSimilarity(ocrName, m.name);
+    if ((!shadeConflict && sim >= 0.55) || !ocrName || ocrName === 'PRINTING INK') {
+      return { locked: false, type: 'OK', masterCode: formatDisplayCode(key), masterName: m.name, msg: `VERIFIED: ${formatDisplayCode(key)} = ${m.name} (${m.category})` };
+    }
+    return {
+      locked: true, type: 'MISMATCH',
+      masterCode: formatDisplayCode(key), masterName: m.name,
+      altCode: bestScore >= 0.55 && bestKey !== key ? formatDisplayCode(bestKey) : '',
+      altName: bestScore >= 0.55 && bestKey !== key ? MASTER_DB[bestKey].name : '',
+      msg: `CODE vs NAME MISMATCH! ${formatDisplayCode(key)} is "${m.name}", NOT "${ocrName}"!`
+    };
+  }
+  return {
+    locked: true, type: 'UNKNOWN',
+    altCode: bestScore >= 0.55 ? formatDisplayCode(bestKey) : '',
+    altName: bestScore >= 0.55 ? MASTER_DB[bestKey].name : '',
+    msg: `CODE "${item.code || 'EMPTY'}" NOT IN 1,179 MASTER DB!`
+  };
+}
+
+function showStatus(msg, kind='info') {
+  const el = document.getElementById('statusBar');
+  el.style.display = 'block';
+  el.className = 'status-bar ' + (kind === 'ok' ? 'status-ok' : (kind === 'err' ? 'status-err' : 'status-info'));
+  el.textContent = msg;
+}
+
+function toggleDrawer(forceOpen) {
+  const body = document.getElementById('settingsDrawer');
+  const open = (forceOpen === true) ? true : !body.classList.contains('open');
+  body.classList.toggle('open', open);
+  document.getElementById('drawerArrow').textContent = open ? '[ - HIDE ]' : '[ + OPEN ]';
+}
+
+function setLabelMode(mode) {
+  activeMode = mode;
+  document.getElementById('btnModeOk').className = 'mode-btn' + (mode === 'ok_ink' ? ' active-ok' : '');
+  document.getElementById('btnModeGrind').className = 'mode-btn' + (mode === 'grinding' ? ' active-grind' : '');
+  document.getElementById('layoutSel').value = (mode === 'ok_ink') ? 'ok_ink_qr' : 'classic';
+  document.getElementById('qtyModeSel').value = (mode === 'ok_ink') ? 'final' : 'grinding';
+  applyQtyMode();
+  savePrefs();
+}
+
+function applyQtyMode() {
+  const qm = document.getElementById('qtyModeSel').value;
+  batches.forEach(b => {
+    b.qty = (qm === 'grinding') ? (b.grinding_qty || b.final_qty || b.qty) : (b.final_qty || b.qty);
+  });
+  renderBatches();
+}
+
+function saveCloudConfig() {
+  const fb = document.getElementById('fbUrlInp').value.trim().replace(/\/+$/, '');
+  const pin = document.getElementById('fbPinInp').value.trim() || '7890';
+  const gk = document.getElementById('groqKeyInp').value.trim();
+  localStorage.setItem('setco_fb_url', fb);
+  localStorage.setItem('setco_fb_pin', pin);
+  if (gk) localStorage.setItem('setco_groq_key', gk);
+  cachedGroqModel = '';
+  showStatus('CLOUD SETTINGS SAVED IN THIS BROWSER. CHECKING PC BRIDGE HEARTBEAT...', 'ok');
+  checkBridgeHeartbeat();
+}
+
+function copySetupLink() {
+  const cfg = {
+    fb: localStorage.getItem('setco_fb_url') || document.getElementById('fbUrlInp').value.trim(),
+    pin: localStorage.getItem('setco_fb_pin') || document.getElementById('fbPinInp').value.trim() || '7890',
+    gk: localStorage.getItem('setco_groq_key') || document.getElementById('groqKeyInp').value.trim()
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  const link = location.origin + location.pathname + '#cfg=' + encoded;
+  navigator.clipboard.writeText(link).then(() => {
+    showStatus('1-TAP PHONE SETUP LINK COPIED! SEND TO WHATSAPP TO CONFIGURE ANY OPERATOR PHONE.', 'ok');
+  }).catch(() => prompt('Copy this setup link:', link));
+}
+
+function loadConfigFromHashOrStorage() {
+  if (location.hash.startsWith('#cfg=')) {
+    try {
+      const cfg = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(5)))));
+      if (cfg.fb) localStorage.setItem('setco_fb_url', cfg.fb);
+      if (cfg.pin) localStorage.setItem('setco_fb_pin', cfg.pin);
+      if (cfg.gk) localStorage.setItem('setco_groq_key', cfg.gk);
+      history.replaceState(null, '', location.pathname);
+      showStatus('PHONE AUTO-CONFIGURED FROM SETUP LINK!', 'ok');
+    } catch (e) {}
+  }
+  document.getElementById('fbUrlInp').value = localStorage.getItem('setco_fb_url') || '';
+  document.getElementById('fbPinInp').value = localStorage.getItem('setco_fb_pin') || '7890';
+  document.getElementById('groqKeyInp').value = localStorage.getItem('setco_groq_key') || '';
+  if (!localStorage.getItem('setco_fb_url') || !localStorage.getItem('setco_groq_key')) {
+    toggleDrawer(true);
+    showStatus('FIRST TIME SETUP: ENTER YOUR FIREBASE RTDB URL + GROQ API KEY BELOW AND TAP SAVE.', 'info');
+  }
+}
+
+function savePrefs() {
+  localStorage.setItem('setco_layout', document.getElementById('layoutSel').value);
+  localStorage.setItem('setco_font', document.getElementById('fontSel').value);
+  localStorage.setItem('setco_dir', document.getElementById('dirSel').value);
+}
+
+async function checkBridgeHeartbeat() {
+  const fb = (localStorage.getItem('setco_fb_url') || '').replace(/\/+$/, '');
+  const badge = document.getElementById('bridgeBadge');
+  if (!fb) { badge.textContent = 'PC: NO URL'; badge.className = 'badge bg-red'; return; }
+  try {
+    const r = await fetch(fb + '/setco_print_bridge/heartbeat.json?t=' + Date.now());
+    const d = await r.json();
+    if (d && d.ts && (Date.now() - d.ts) < 25000) {
+      badge.textContent = 'PC: ONLINE';
+      badge.className = 'badge bg-lime';
+    } else {
+      badge.textContent = 'PC: OFFLINE';
+      badge.className = 'badge bg-red';
+    }
+  } catch (e) {
+    badge.textContent = 'PC: ERROR';
+    badge.className = 'badge bg-red';
+  }
+}
+
+async function compressImageToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const maxEdge = 1600;
+      let w = img.width, h = img.height;
+      if (Math.max(w, h) > maxEdge) {
+        const s = maxEdge / Math.max(w, h);
+        w = Math.round(w * s); h = Math.round(h * s);
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.86));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+async function resolveGroqVisionModel(apiKey) {
+  if (cachedGroqModel) return cachedGroqModel;
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: { 'Authorization': 'Bearer ' + apiKey }
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const ids = (d.data || []).map(x => x.id);
+      const preferred = ['qwen/qwen3.8-27b','qwen/qwen3.6-27b','meta-llama/llama-4-scout-17b-16e-instruct','meta-models/muse-spark-open'];
+      for (const p of preferred) { if (ids.includes(p)) { cachedGroqModel = p; return p; } }
+      const anyV = ids.find(id => /vision|vl|qwen3\.8|qwen3\.6|llama-4|muse-spark/i.test(id));
+      if (anyV) { cachedGroqModel = anyV; return anyV; }
+    }
+  } catch (e) {}
+  cachedGroqModel = 'qwen/qwen3.8-27b';
+  return cachedGroqModel;
+}
+
+async function handleImageUpload(inp) {
+  const f = inp.files && inp.files[0];
+  inp.value = '';
+  if (!f) return;
+  const apiKey = (localStorage.getItem('setco_groq_key') || document.getElementById('groqKeyInp').value || '').trim();
+  if (!apiKey) {
+    toggleDrawer(true);
+    showStatus('GROQ API KEY MISSING! ENTER YOUR gsk_... KEY IN SETTINGS AND TAP SAVE.', 'err');
+    return;
+  }
+  showStatus('COMPRESSING PHOTO & SCANNING WITH GROQ VISION AI...', 'info');
+  try {
+    const dataUrl = await compressImageToBase64(f);
+    const model = await resolveGroqVisionModel(apiKey);
+    const prompt = `You are a Zero-Error Industrial OCR Auditor for Setco Inks Private Limited factory slips.
+Extract ONLY text visibly printed or handwritten in THIS image. NEVER invent or guess any product code, name, or batch number. If a field is not visible, return "".
+Strip any leading product code from 'name'.
+'final_qty' is the main header batch Quantity. 'grinding_qty' is the sum of Sequence A rows if present, else equal to 'final_qty'.
+Return ONLY a valid JSON array (no markdown fences):
+[{"code":"<EXACT_CODE_OR_EMPTY>","name":"<EXACT_NAME_OR_EMPTY>","batch":"<EXACT_BATCH_NO_OR_EMPTY>","final_qty":"<QTY_WITH_KGS>","grinding_qty":"<PART_A_OR_TOTAL_QTY>","date":"<DATE_OR_EMPTY>","pot_no":"<POT_OR_DASH>","qc_by":"<QUALITY_APPROVED_OR_DASH>"}]`;
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        temperature: 0.0,
+        max_tokens: 700,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: dataUrl } }
+          ]
+        }]
+      })
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body?.error?.message || ('HTTP ' + res.status));
+    const txt = body.choices?.[0]?.message?.content || '';
+    const m = txt.match(/\[[\s\S]*\]/);
+    if (!m) throw new Error('Groq returned no JSON batch array.');
+    const arr = JSON.parse(m[0]);
+    const qMode = document.getElementById('qtyModeSel').value;
+    let added = 0;
+    arr.forEach(raw => {
+      const code = normalizeCode(raw.code);
+      const batch = normalizeBatch(raw.batch);
+      const finalQ = normalizeQty(raw.final_qty || raw.qty);
+      const grindQ = normalizeQty(raw.grinding_qty || raw.final_qty || raw.qty);
+      const dt = validateDate(raw.date, batch);
+      const item = {
+        selected: true,
+        code,
+        name: String(raw.name || '').toUpperCase().trim(),
+        batch,
+        final_qty: finalQ,
+        grinding_qty: grindQ,
+        qty: qMode === 'grinding' ? grindQ : finalQ,
+        date: dt,
+        pass_no: '-',
+        pot_no: raw.pot_no || '-',
+        qc_by: raw.qc_by || 'QUALITY APPROVED',
+        copies: 1,
+        override: false
+      };
+      const chk = crossCheckBatch(item);
+      if (!chk.locked && chk.masterName) item.name = chk.masterName;
+      batches.unshift(item);
+      added++;
+    });
+    renderBatches();
+    showStatus(`[GROQ: ${model}] EXTRACTED ${added} BATCH(ES) & CROSS-CHECKED AGAINST 1,179 MASTER DB.`, 'ok');
+  } catch (e) {
+    showStatus('GROQ SCAN ERROR: ' + e.message, 'err');
+  }
+}
+
+function addBatchRow() {
+  batches.unshift({
+    selected: true, code: '', name: '', batch: '290-',
+    final_qty: '0 KGS', grinding_qty: '0 KGS', qty: '0 KGS',
+    date: todayStr(), pass_no: '-', pot_no: '-', qc_by: 'QUALITY APPROVED', copies: 1, override: false
+  });
+  renderBatches();
+}
+
+function loadSamples() {
+  batches = [
+    { selected: true, code: 'SI-29510', name: 'SETCOLAM WHITE', batch: '290-11265618', final_qty: '2400 KGS', grinding_qty: '2400 KGS', qty: '2400 KGS', date: todayStr(), pass_no: '-', pot_no: '904 (D)', qc_by: 'QUALITY APPROVED', copies: 1, override: false },
+    { selected: true, code: 'PVC0005', name: 'VINYL RED 53:1 CONCENTRATE', batch: '290-11265619', final_qty: '600 KGS', grinding_qty: '600 KGS', qty: '600 KGS', date: todayStr(), pass_no: '1', pot_no: 'POT-08', qc_by: 'QUALITY APPROVED', copies: 1, override: false }
+  ];
+  renderBatches();
+  showStatus('LOADED 2 SAMPLE BATCHES FROM 1,179 MASTER DB.', 'ok');
+}
+
+function onCodeInput(idx, val) {
+  batches[idx].code = val.toUpperCase();
+  const k = canonicalKey(val);
+  if (MASTER_DB[k]) batches[idx].name = MASTER_DB[k].name;
+  renderBatches();
+}
+
+function fixWithMaster(idx, code, name) {
+  batches[idx].code = code;
+  batches[idx].name = name;
+  batches[idx].override = false;
+  renderBatches();
+}
+
+function renderBatches() {
+  document.getElementById('batchCountBadge').textContent = batches.length;
+  const box = document.getElementById('batchList');
+  if (!batches.length) {
+    box.innerHTML = '<div class="box" style="text-align:center;font-weight:700;color:#555;">QUEUE EMPTY — TAP "OPEN CAMERA" OR "+ ADD"</div>';
+    return;
+  }
+  box.innerHTML = batches.map((b, i) => {
+    const chk = crossCheckBatch(b);
+    const isLocked = chk.locked && !b.override;
+    let fixHtml = '';
+    if (isLocked) {
+      fixHtml = '<div class="fix-row">';
+      if (chk.masterCode && chk.masterName) fixHtml += `<button class="btn btn-sm btn-yellow" onclick="fixWithMaster(${i},'${chk.masterCode}','${chk.masterName.replace(/'/g,"\\'")}')">USE ${chk.masterCode} NAME</button>`;
+      if (chk.altCode && chk.altName) fixHtml += `<button class="btn btn-sm btn-blue" onclick="fixWithMaster(${i},'${chk.altCode}','${chk.altName.replace(/'/g,"\\'")}')">USE ${chk.altCode}</button>`;
+      fixHtml += `<button class="btn btn-sm" onclick="batches[${i}].override=true;renderBatches()">FORCE UNLOCK</button></div>`;
+    }
+    return `
+      <div class="batch-card ${isLocked ? 'locked' : ''}">
+        <div class="card-top">
+          <label style="display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;">
+            <input type="checkbox" ${b.selected ? 'checked' : ''} onchange="batches[${i}].selected=this.checked">
+            BATCH #${i+1} ${isLocked ? '[LOCKED]' : '[VERIFIED]'}
+          </label>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm" onclick="previewSingle(${i})">PREVIEW</button>
+            <button class="btn btn-sm btn-red" onclick="batches.splice(${i},1);renderBatches()">DEL</button>
+          </div>
+        </div>
+        <div class="field-grid">
+          <div>
+            <span class="lbl">Product Code</span>
+            <input type="text" list="masterCodesList" value="${b.code || ''}" onchange="onCodeInput(${i}, this.value)">
+          </div>
+          <div>
+            <span class="lbl">Date</span>
+            <input type="text" value="${b.date || todayStr()}" onchange="batches[${i}].date=this.value">
+          </div>
+          <div class="span-2">
+            <span class="lbl">Product Name</span>
+            <input type="text" value="${b.name || ''}" onchange="batches[${i}].name=this.value.toUpperCase();renderBatches()">
+          </div>
+          <div>
+            <span class="lbl">Batch No</span>
+            <input type="text" value="${b.batch || ''}" onchange="batches[${i}].batch=this.value">
+          </div>
+          <div>
+            <span class="lbl">Quantity</span>
+            <input type="text" value="${b.qty || ''}" onchange="batches[${i}].qty=this.value;batches[${i}].final_qty=this.value">
+          </div>
+          <div>
+            <span class="lbl">${activeMode === 'ok_ink' ? 'Tank / Pot No' : 'Pass No'}</span>
+            <input type="text" value="${activeMode === 'ok_ink' ? (b.pot_no || '-') : (b.pass_no || '-')}" onchange="if(activeMode==='ok_ink') batches[${i}].pot_no=this.value; else batches[${i}].pass_no=this.value;">
+          </div>
+          <div>
+            <span class="lbl">Copies</span>
+            <input type="number" min="1" max="50" value="${b.copies || 1}" onchange="batches[${i}].copies=Math.max(1,parseInt(this.value)||1)">
+          </div>
+        </div>
+        <div class="audit-box ${isLocked ? 'audit-warn' : 'audit-ok'}">${chk.msg}</div>
+        ${fixHtml}
+      </div>`;
+  }).join('');
+}
+
+function drawLabelToCanvas(canvas, item) {
+  const W = 1200, H = 800;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = 6; ctx.strokeRect(14, 14, W - 28, H - 28);
+  ctx.lineWidth = 2; ctx.strokeRect(24, 24, W - 48, H - 48);
+
+  const layout = document.getElementById('layoutSel').value;
+  const codeTxt = normalizeCode(item.code) || '-';
+  const nameTxt = String(item.name || 'PRINTING INK').toUpperCase();
+  const batchTxt = normalizeBatch(item.batch) || '-';
+  const qtyTxt = normalizeQty(item.qty);
+  const dateTxt = validateDate(item.date, batchTxt);
+  const passTxt = String(item.pass_no || '-').trim();
+  const potTxt = String(item.pot_no || '-').trim().toUpperCase();
+
+  function fitText(txt, x, y, maxW, startSize, align='left') {
+    let sz = startSize;
+    while (sz > 24) {
+      ctx.font = `700 ${sz}px "Space Grotesk", Arial, sans-serif`;
+      if (ctx.measureText(txt).width <= maxW) break;
+      sz -= 4;
+    }
+    ctx.textAlign = align;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(txt, align === 'center' ? x + maxW / 2 : x, y);
+  }
+
+  if (layout === 'ok_ink' || layout === 'ok_ink_qr') {
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(24, 168); ctx.lineTo(W-24, 168); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(720, 24); ctx.lineTo(720, 168); ctx.stroke();
+    ctx.strokeRect(42, 38, 360, 86);
+    fitText('OK INK', 42, 82, 360, 64, 'center');
+    ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.fillText('SETCO INKS PVT. LTD.', 425, 62);
+    ctx.strokeRect(425, 84, 270, 40);
+    fitText('QUALITY APPROVED', 425, 105, 270, 22, 'center');
+    ctx.font = '700 20px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.fillText('DATE: ' + dateTxt, 44, 148);
+    ctx.fillText('PRODUCT CODE', 740, 48);
+    fitText(codeTxt, 735, 114, W - 770, 74, 'center');
+
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(24, 365); ctx.lineTo(W-24, 365); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(24, 555); ctx.lineTo(W-24, 555); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(555, 555); ctx.lineTo(555, H-24); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(910, 555); ctx.lineTo(910, H-24); ctx.stroke();
+
+    ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left';
+    ctx.fillText('PRODUCT / INK NAME', 44, 194);
+    fitText(nameTxt, 44, 286, W - 90, 78, 'left');
+    ctx.fillText('BATCH NO.', 44, 390);
+    fitText(batchTxt, 44, 476, W - 90, 86, 'left');
+    ctx.fillText('FINAL BATCH QTY', 44, 582);
+    fitText(qtyTxt, 44, 686, 490, 78, 'left');
+    ctx.fillText('TANK / POT NO.', 575, 582);
+    fitText(potTxt, 575, 686, 320, 52, 'center');
+
+    if (layout === 'ok_ink_qr' && typeof qrcode === 'function') {
+      const qr = qrcode(0, 'M');
+      qr.addData(`OK INK|${codeTxt}|${nameTxt}|${batchTxt}|${qtyTxt}|${dateTxt}`);
+      qr.make();
+      const n = qr.getModuleCount(), cell = Math.floor(196 / n), ox = 955, oy = 578;
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) ctx.fillRect(ox + c*cell, oy + r*cell, cell, cell);
+    } else {
+      ctx.strokeRect(930, 576, 224, 180);
+      fitText('OK INK', 930, 646, 224, 42, 'center');
+      fitText('QC PASSED', 930, 706, 224, 26, 'center');
+    }
+    return;
+  }
+
+  // Upgraded Classic Industrial Layout
+  const y1 = 178, y2 = 382, y3 = 582;
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(24, y1); ctx.lineTo(W-24, y1); ctx.stroke();
+  ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(24, y2); ctx.lineTo(W-24, y2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(24, y3); ctx.lineTo(W-24, y3); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(760, 24); ctx.lineTo(760, y1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(720, y3); ctx.lineTo(720, H-24); ctx.stroke();
+
+  ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('PRODUCT CODE', 42, 34);
+  fitText(codeTxt, 42, 118, 700, 86, 'left');
+  ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('DATE', 780, 34);
+  fitText(dateTxt, 770, 118, W - 805, 52, 'center');
+
+  ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('PRODUCT NAME', 42, y1 + 12);
+  fitText(nameTxt, 42, y1 + 118, W - 84, 80, 'left');
+
+  ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('BATCH NO.', 42, y2 + 12);
+  fitText(batchTxt, 42, y2 + 118, W - 84, 88, 'left');
+
+  ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('QUANTITY', 42, y3 + 12);
+  fitText(qtyTxt, 42, y3 + 118, 660, 80, 'left');
+
+  ctx.font = '700 22px "Space Grotesk", Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('PASS NO.', 742, y3 + 12);
+  if (!passTxt || passTxt === '-') {
+    ctx.beginPath(); ctx.moveTo(765, H - 68); ctx.lineTo(W - 65, H - 68); ctx.stroke();
+  } else {
+    fitText(passTxt, 735, y3 + 118, W - 770, 74, 'center');
+  }
+}
+
+function previewSingle(idx) {
+  const cont = document.getElementById('previewContainer');
+  cont.innerHTML = '';
+  const c = document.createElement('canvas');
+  c.className = 'prev-canvas';
+  drawLabelToCanvas(c, batches[idx]);
+  cont.appendChild(c);
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function openPreviewModal() {
+  const sel = batches.filter(b => b.selected);
+  if (!sel.length) return showStatus('NO BATCHES SELECTED FOR PREVIEW.', 'err');
+  const cont = document.getElementById('previewContainer');
+  cont.innerHTML = '';
+  sel.forEach(b => {
+    const c = document.createElement('canvas');
+    c.className = 'prev-canvas';
+    drawLabelToCanvas(c, b);
+    cont.appendChild(c);
+  });
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function closePreviewModal() {
+  document.getElementById('previewModal').classList.remove('open');
+}
+
+async function sendToCloudPrinter() {
+  const fb = (localStorage.getItem('setco_fb_url') || '').replace(/\/+$/, '');
+  const pin = (localStorage.getItem('setco_fb_pin') || '7890').trim();
+  if (!fb) { toggleDrawer(true); return showStatus('SET YOUR FIREBASE RTDB URL FIRST!', 'err'); }
+
+  const sel = batches.filter(b => b.selected);
+  if (!sel.length) return showStatus('NO BATCHES SELECTED TO PRINT.', 'err');
+
+  const blocked = sel.filter(b => crossCheckBatch(b).locked && !b.override);
+  if (blocked.length) return showStatus(`PRINT BLOCKED: ${blocked.length} BATCH(ES) HAVE CODE/NAME MISMATCH! FIX OR UNLOCK FIRST.`, 'err');
+
+  const jobId = 'job_' + Date.now();
+  const payload = {
+    status: 'pending',
+    pin,
+    layout: document.getElementById('layoutSel').value,
+    font: document.getElementById('fontSel').value,
+    direction: document.getElementById('dirSel').value,
+    created_at: Date.now(),
+    items: sel
+  };
+
+  showStatus('SENDING PRINT JOB TO OFFICE PC VIA FIREBASE...', 'info');
+  try {
+    const r = await fetch(`${fb}/setco_print_bridge/jobs/${jobId}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error('Firebase PUT HTTP ' + r.status);
+    showStatus('JOB QUEUED! WAITING FOR OFFICE PC TSC PRINTER...', 'info');
+
+    // Poll job status for up to 25 seconds
+    for (let t = 0; t < 16; t++) {
+      await new Promise(res => setTimeout(res, 1500));
+      const jr = await fetch(`${fb}/setco_print_bridge/jobs/${jobId}.json?t=` + Date.now());
+      const jd = await jr.json();
+      if (jd && jd.status === 'printed') {
+        showStatus(`PRINTED ON TSC TTP-244 PRO! (${sel.length} label(s) @ ${jd.printed_at || 'now'})`, 'ok');
+        return;
+      }
+      if (jd && jd.status === 'error') {
+        showStatus('PC BRIDGE ERROR: ' + (jd.error || 'Unknown'), 'err');
+        return;
+      }
+    }
+    showStatus('JOB QUEUED IN FIREBASE — MAKE SURE OFFICE PC BRIDGE IS RUNNING.', 'info');
+  } catch (e) {
+    showStatus('FIREBASE SEND FAILED: ' + e.message, 'err');
+  }
+}
+
+async function importMasterExcel(inp) {
+  const f = inp.files && inp.files[0];
+  inp.value = '';
+  if (!f || typeof XLSX === 'undefined') return showStatus('EXCEL PARSER LOADING — TRY AGAIN IN 2 SECONDS.', 'err');
+  try {
+    const buf = await f.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+    const extra = JSON.parse(localStorage.getItem('setco_extra_master_db') || '{}');
+    let added = 0;
+    const codeRe = /^(?:SI|SF|PVC|PAC|NCC|EXT|ENG)\d{3,6}$/i;
+    wb.SheetNames.forEach(sn => {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1 });
+      let cCol = -1, nCol = -1;
+      rows.forEach((row, idx) => {
+        if (!Array.isArray(row)) return;
+        const cells = row.map(x => String(x == null ? '' : x).trim());
+        if (idx < 10 && cCol === -1) {
+          const low = cells.map(c => c.toLowerCase());
+          const ci = low.findIndex(h => h === 'code' || h.includes('si code') || h.includes('product code'));
+          const ni = low.findIndex(h => h === 'name' || h.includes('product name') || h.includes('description'));
+          if (ci !== -1 && ni !== -1 && ci !== ni) { cCol = ci; nCol = ni; return; }
+        }
+        let k = '', nm = '';
+        if (cCol !== -1 && nCol !== -1) {
+          k = (cells[cCol] || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+          nm = (cells[nCol] || '').toUpperCase().replace(/\s+/g, ' ').trim();
+        }
+        if (codeRe.test(k) && nm && nm.length >= 3 && !MASTER_DB[k]) {
+          const cat = /^(PVC|PAC|NCC|EXT)/.test(k) ? 'CONCENTRATE' : (k.startsWith('SF') ? 'SEMI-FINISHED' : 'FINISHED GOODS');
+          extra[k] = { name: nm, category: cat };
+          added++;
+        }
+      });
+    });
+    localStorage.setItem('setco_extra_master_db', JSON.stringify(extra));
+    initMasterDB();
+    showStatus(`EXCEL IMPORTED! ADDED ${added} NEW PRODUCTS. TOTAL DB: ${Object.keys(MASTER_DB).length}.`, 'ok');
+  } catch (e) {
+    showStatus('EXCEL IMPORT ERROR: ' + e.message, 'err');
+  }
+}
+
+initMasterDB();
+loadConfigFromHashOrStorage();
+renderBatches();
+checkBridgeHeartbeat();
+setInterval(checkBridgeHeartbeat, 6000);
+</script>
+</body>
+</html>
